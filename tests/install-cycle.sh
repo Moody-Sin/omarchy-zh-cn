@@ -112,7 +112,7 @@ test -x "$sandbox_home/.local/share/omarchy-zh-cn/agents/bin/kimi-collector"
 test -x "$sandbox_home/.config/omarchy/hooks/post-update.d/omarchy-zh-post-update"
 rg -Fq '准备更新吗？' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-confirm"
 rg -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
-[[ $(find "$sandbox_home/.config/omarchy/plugins" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l) -eq 22 ]]
+[[ $(find "$sandbox_home/.config/omarchy/plugins" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l) -eq 21 ]]
 [[ $(jq -r '.bar.layout.center[0].unit' "$sandbox_home/.config/omarchy/shell.json") == metric ]]
 
 HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/uninstall.sh" --yes >/dev/null

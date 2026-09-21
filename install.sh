@@ -24,14 +24,41 @@ BACKUP_DIR="$STATE_DIR/original"
 DRY_RUN=0
 ADOPT_EXISTING=0
 
+# 注意：不再克隆 omarchy.menu。第三方菜单插件拿不到应用库
+# （上游 scoped shell 把同名 menu/bar-widget 双重创建互相覆盖，
+# 最终 appLibrary 为空，应用子菜单显示为空），而菜单中文
+# 已通过用户级 omarchy-menu.jsonc 实现，原生菜单可直接读取。
 PLUGIN_IDS=(
   omarchy.audio omarchy.bluetooth omarchy.clock omarchy.monitor
   omarchy.network omarchy.power omarchy.weather omarchy.agents
-  omarchy.menu omarchy.notifications omarchy.tray omarchy.indicators
+  omarchy.notifications omarchy.tray omarchy.indicators
   omarchy.system-update omarchy.lock omarchy.polkit omarchy.clipboard
   omarchy.emojis omarchy.image-picker omarchy.reminders omarchy.speedtest
   omarchy.disk-speedtest omarchy.wifiqr
 )
+
+# 旧版本曾克隆 omarchy.menu，会导致应用列表为空。检测到受本项目
+# 管理的旧克隆时将其移除，恢复原生菜单（应用库正常）。
+retire_legacy_menu_clone() {
+  local target_id="$user_name.menu"
+  local target_dir="$PLUGIN_ROOT/$target_id"
+  local manifest="$target_dir/manifest.json"
+  [[ -e $target_dir ]] || return 0
+  [[ -f $manifest ]] || {
+    echo "旧菜单克隆路径不是有效插件，跳过清理：$target_dir" >&2
+    return 0
+  }
+  local managed cloned_from
+  managed=$(jq -r '.omarchy.zhCnManaged // false' "$manifest")
+  cloned_from=$(jq -r '.omarchy.clonedFrom // empty' "$manifest")
+  if [[ $managed == true && $cloned_from == omarchy.menu ]]; then
+    if ((DRY_RUN)); then
+      echo "将移除旧菜单克隆并恢复原生菜单：$target_id"
+      return 0
+    fi
+    omarchy plugin remove "$target_id" --yes
+  fi
+}
 
 usage() {
   cat <<'EOF'
@@ -81,6 +108,7 @@ echo "Omarchy：$version"
 echo "将安装 ${#PLUGIN_IDS[@]} 个中文插件克隆。"
 
 if ((DRY_RUN)); then
+  retire_legacy_menu_clone
   for source_id in "${PLUGIN_IDS[@]}"; do
     target_id="$user_name.${source_id#omarchy.}"
     if [[ -d $PLUGIN_ROOT/$target_id ]]; then
@@ -97,6 +125,7 @@ if ((DRY_RUN)); then
 fi
 
 mkdir -p "$HOME/.local/bin" "$UPDATE_CONFIRM_DIR" "$PLUGIN_ROOT" "$BACKUP_DIR"
+retire_legacy_menu_clone
 
 if [[ ! -e $STATE_DIR/install.version ]]; then
   printf '1\n' >"$STATE_DIR/install.version"

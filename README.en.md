@@ -115,13 +115,15 @@ cd omarchy-zh-cn
 The installer will:
 
 1. Check the Omarchy version and dependencies.
-2. Create 22 user plugin clones through the official `omarchy plugin clone` command.
+2. Create 21 user plugin clones through the official `omarchy plugin clone` command.
 3. Install the localization synchronizer and generate the localized plugins.
 4. Install the Codex/Grok/Kimi usage extension and theme marks for the Agents plugin.
 5. Configure metric units for weather data.
 6. Map `Super + K` to the Chinese keyboard shortcuts panel.
 7. Generate localized update scripts from the currently installed version and route the Omarchy menu and status-bar update actions through them.
 8. Install a `post-update` hook that automatically resynchronizes after Omarchy updates.
+
+> Note: the menu itself (`omarchy.menu`) is intentionally not cloned. Third-party menu clones receive no app library, which leaves the Apps submenu empty; menu localization is delivered through the user-level `omarchy-menu.jsonc` instead, which the stock menu reads directly. Legacy menu clones from earlier versions are removed automatically during install or sync, restoring the stock menu.
 
 If clones with the same username and plugin suffix already exist, the installer stops to avoid overwriting personal modifications. Use the following command only after confirming that those clones were created by an earlier version of this localization:
 

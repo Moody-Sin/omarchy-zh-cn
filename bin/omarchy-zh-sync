@@ -29,10 +29,14 @@ const agentsOverlayCandidates = [
 ];
 const agentsOverlayDir = agentsOverlayCandidates.find(candidate => fs.existsSync(candidate));
 
+// 注意：不再同步 omarchy.menu。第三方菜单克隆拿不到应用库
+// （上游 scoped shell 对同名 menu/bar-widget 双重创建互相覆盖，
+// 最终 appLibrary 为空，应用子菜单显示为空），菜单中文改由
+// 用户级 omarchy-menu.jsonc 承担，原生菜单直接读取。
 const pluginIds = [
   "omarchy.audio", "omarchy.bluetooth", "omarchy.clock", "omarchy.monitor",
   "omarchy.network", "omarchy.power", "omarchy.weather", "omarchy.agents",
-  "omarchy.menu", "omarchy.notifications",
+  "omarchy.notifications",
   "omarchy.tray", "omarchy.indicators", "omarchy.system-update", "omarchy.lock", "omarchy.polkit",
   "omarchy.clipboard", "omarchy.emojis", "omarchy.image-picker",
   "omarchy.reminders", "omarchy.speedtest", "omarchy.disk-speedtest",
@@ -756,6 +760,9 @@ const menuZh = {
   "setup.security.passwordless-sudo": {
     "label": "免密码管理权限"
   },
+  "setup.security.sudoless-docker": {
+    "label": "免 sudo 的 Docker"
+  },
   "setup.direct-boot": {
     "label": "直接启动"
   },
@@ -881,6 +888,9 @@ const menuZh = {
   "remove.security.fingerprint": {
     "label": "指纹"
   },
+  "remove.security.sudoless-docker": {
+    "label": "免 sudo 的 Docker"
+  },
   "remove.gaming.xbox-cloud": {
     "label": "Xbox 云游戏"
   },
@@ -897,6 +907,10 @@ const menuZh = {
     "title": "卸载"
   },
   "remove.development.elixir": {
+    "title": "卸载"
+  },
+  "remove.ai": {
+    "label": "人工智能",
     "title": "卸载"
   },
   "update.channel": {
@@ -934,6 +948,9 @@ const menuZh = {
   },
   "update.channel.rc": {
     "label": "候选版"
+  },
+  "update.channel.edge": {
+    "label": "前沿版"
   },
   "update.channel.dev": {
     "label": "开发版"
@@ -1447,16 +1464,38 @@ function rebuildPlugin(catalogEntry) {
         if (!after.includes(updateCommandSource)) throw new Error("系统更新插件结构已变化：更新入口");
         after = after.replace(updateCommandSource, updateCommandTarget);
       }
-      if (sourceId === "omarchy.menu" && path.basename(file) === "Menu.qml") {
-        after = after
-          .replace(
-            'message: "Do you want to uninstall " + ((root.deleteTarget && root.deleteTarget.label) || "") + "?"',
-            'message: "确定要卸载“" + ((root.deleteTarget && root.deleteTarget.label) || "") + "”吗？"'
-          )
-          .replace(
-            'confirmText: "卸载"',
-            'confirmText: "卸载"\n          cancelText: "取消"'
-          );
+      if (sourceId === "omarchy.audio" && path.basename(file) === "Model.js") {
+        // PipeWire 节点类型是英文协议值，只能翻译展示字符串。
+        const playbackSource = 'mediaClass.indexOf("输出")';
+        if (!after.includes(playbackSource)) throw new Error("音频插件结构已变化：回放流判断");
+        after = after.split(playbackSource).join('mediaClass.indexOf("Output")');
+        const sourceSource = 'mediaClass.indexOf("音源")';
+        if (!after.includes(sourceSource)) throw new Error("音频插件结构已变化：音源判断");
+        after = after.split(sourceSource).join('mediaClass.indexOf("Source")');
+      }
+      if (sourceId === "omarchy.clock" && path.basename(file) === "Panel.qml") {
+        // 日历 "W" 表头可以汉化，但键盘按键判断必须保持英文。
+        const weekKeySource = 't === "周"';
+        if (!after.includes(weekKeySource)) throw new Error("时钟插件结构已变化：周起始快捷键");
+        after = after.split(weekKeySource).join('t === "W"');
+      }
+      if (sourceId === "omarchy.network" && path.basename(file) === "Panel.qml") {
+        // DNS 服务商是传给 omarchy-dns 的英文协议值，只能翻译展示文字。
+        const dnsArraySource = 'dnsProviders: ["DHCP", "Cloudflare", "Google", "自定义"]';
+        if (!after.includes(dnsArraySource)) throw new Error("网络插件结构已变化：DNS 列表");
+        after = after.split(dnsArraySource).join('dnsProviders: ["DHCP", "Cloudflare", "Google", "Custom"]');
+        const dnsValueSource = 'provider: "自定义"';
+        if (!after.includes(dnsValueSource)) throw new Error("网络插件结构已变化：DNS 选项值");
+        after = after.split(dnsValueSource).join('provider: "Custom"');
+        const dnsCheckSource = 'if (provider === "自定义")';
+        if (!after.includes(dnsCheckSource)) throw new Error("网络插件结构已变化：DNS 自定义判断");
+        after = after.split(dnsCheckSource).join('if (provider === "Custom")');
+        const pillTextSource = 'text: provider';
+        if (!after.includes(pillTextSource)) throw new Error("网络插件结构已变化：DNS 选项展示");
+        after = after.replace(pillTextSource, 'text: ({ "Custom": "自定义" })[provider] || provider');
+        const wifiKeySource = 't === "周"';
+        if (!after.includes(wifiKeySource)) throw new Error("网络插件结构已变化：网络面板快捷键");
+        after = after.split(wifiKeySource).join('t === "W"');
       }
       if (sourceId === "omarchy.clipboard" && path.basename(file) === "Clipboard.qml") {
         const confirmSource = 'confirmText: "删除"';
@@ -1599,6 +1638,11 @@ function syncMenu() {
   if (defaults["update.omarchy"]) {
     defaults["update.omarchy"].action = `omarchy-launch-floating-terminal-with-presentation ${updateZh}`;
   }
+  // 原生菜单没有 root 条目时回退显示英文 Go；显式给出中文根标题，
+  // 用户自定义过的根标题予以保留。
+  const priorRootLabel = existing["root"]?.label;
+  defaults["root"] = { ...(defaults["root"] || {}), ...(existing["root"] || {}) };
+  if (!priorRootLabel) defaults["root"].label = "开始";
   const header = "// Omarchy 4 简体中文菜单：动作来自当前系统版本，文字由本地汉化保留。\n";
   fs.mkdirSync(path.dirname(menuUser), { recursive: true });
   fs.writeFileSync(menuUser, header + JSON.stringify(defaults, null, 2) + "\n");
@@ -1620,8 +1664,33 @@ function syncShellSettings() {
   fs.renameSync(temporary, shellPath);
 }
 
+// 旧版本曾克隆 omarchy.menu，该克隆拿不到应用库导致应用子菜单
+// 为空。检测到受本项目管理的旧克隆时将其移除，恢复原生菜单。
+function retireMenuClone() {
+  const targetDir = path.join(pluginRoot, `${user}.menu`);
+  const manifestFile = path.join(targetDir, "manifest.json");
+  if (!fs.existsSync(targetDir)) return;
+  let manifest = null;
+  try {
+    manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+  } catch (_) {
+    throw new Error(`旧菜单克隆缺少有效清单，请手动处理：${targetDir}`);
+  }
+  const managed = manifest.omarchy?.zhCnManaged === true;
+  const matchingClone = manifest.omarchy?.clonedFrom === "omarchy.menu";
+  if (managed && matchingClone) {
+    if (!quiet) console.log(`移除旧菜单克隆并恢复原生菜单：${user}.menu`);
+    execFileSync("omarchy", ["plugin", "remove", `${user}.menu`, "--yes"], { stdio: quiet ? "ignore" : "inherit" });
+    return;
+  }
+  if (matchingClone || fs.existsSync(targetDir)) {
+    throw new Error(`发现非本项目管理的菜单插件，拒绝触碰：${targetDir}。如确认它是旧汉化克隆，请先用 omarchy plugin remove 手动移除后再同步。`);
+  }
+}
+
 fs.mkdirSync(pluginRoot, { recursive: true });
 fs.mkdirSync(stateDir, { recursive: true });
+retireMenuClone();
 syncUpdateScripts();
 const catalog = JSON.parse(execFileSync("omarchy-plugin-catalog", { encoding: "utf8" }));
 const byId = new Map(catalog.filter(item => item.firstParty).map(item => [item.id, item]));

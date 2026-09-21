@@ -24,8 +24,13 @@ HOME="$sandbox_home" USER=testuser \
 
 plugin_root="$sandbox_home/.config/omarchy/plugins"
 plugin_count=$(find "$plugin_root" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l)
-[[ $plugin_count -eq 22 ]] || {
+[[ $plugin_count -eq 21 ]] || {
   echo "生成的插件数量不正确：$plugin_count" >&2
+  exit 1
+}
+# 菜单插件不再克隆：第三方菜单拿不到应用库，中文改由菜单配置承担。
+test ! -e "$plugin_root/testuser.menu" || {
+  echo "不应再生成菜单插件克隆" >&2
   exit 1
 }
 
@@ -53,6 +58,11 @@ for (const [id, label] of Object.entries({
   if (menu[id].label !== label) throw new Error(`${id} 菜单未汉化`)
 }
 if (menu["learn.keybindings"].label !== "快捷键") throw new Error("快捷键菜单未汉化")
+if (menu["root"].label !== "开始") throw new Error("根菜单标题未汉化")
+if (menu["update.channel.edge"].label !== "前沿版") throw new Error("Edge 通道未汉化")
+if (menu["remove.ai"].title !== "卸载") throw new Error("AI 卸载标题未汉化")
+if (menu["setup.security.sudoless-docker"].label !== "免 sudo 的 Docker") throw new Error("免 sudo Docker 未汉化")
+if (menu["remove.security.sudoless-docker"].label !== "免 sudo 的 Docker") throw new Error("移除免 sudo Docker 未汉化")
 if (menu["learn.keybindings"].action !== home + "/.local/bin/omarchy-menu-keybindings-zh") {
   throw new Error("快捷键入口路径不正确")
 }
@@ -106,6 +116,38 @@ rg -Fq '无法获取测速节点' "$plugin_root/testuser.speedtest/Panel.qml"
 rg -Fq '测速未完成' "$plugin_root/testuser.disk-speedtest/Panel.qml"
 rg -Fq 'function localizedCommandError' "$plugin_root/testuser.wifiqr/Panel.qml"
 rg -Fq '没有正在使用的无线网络连接' "$plugin_root/testuser.wifiqr/Panel.qml"
+# 协议值保持英文、仅展示汉化：DNS 服务商、W 快捷键、音频类型判断。
+rg -Fq 'dnsProviders: ["DHCP", "Cloudflare", "Google", "Custom"]' "$plugin_root/testuser.network/Panel.qml"
+rg -Fq 'if (provider === "Custom")' "$plugin_root/testuser.network/Panel.qml"
+rg -Fq 'provider: "Custom"' "$plugin_root/testuser.network/Panel.qml"
+rg -Fq '{ "Custom": "自定义" })[provider] || provider' "$plugin_root/testuser.network/Panel.qml"
+! rg -Fq 'provider === "自定义"' "$plugin_root/testuser.network/Panel.qml"
+rg -Fq 't === "W"' "$plugin_root/testuser.clock/Panel.qml"
+rg -Fq 't === "W"' "$plugin_root/testuser.network/Panel.qml"
+! rg -Fq 't === "周"' "$plugin_root/testuser.clock/Panel.qml" "$plugin_root/testuser.network/Panel.qml"
+rg -Fq 'text: "周"' "$plugin_root/testuser.clock/Panel.qml"
+rg -Fq 'mediaClass.indexOf("Output")' "$plugin_root/testuser.audio/Model.js"
+rg -Fq 'mediaClass.indexOf("Source")' "$plugin_root/testuser.audio/Model.js"
+! rg -Fq 'indexOf("输出")' "$plugin_root/testuser.audio/Model.js"
+! rg -Fq 'indexOf("音源")' "$plugin_root/testuser.audio/Model.js"
+python3 - "$plugin_root" <<'PY'
+import re, pathlib, sys
+root = pathlib.Path(sys.argv[1])
+pat = re.compile(r'(===?|!==?)\s*"[^"]*[\u3400-\u9fff]|(indexOf|includes|startsWith|endsWith)\(\s*"[^"]*[\u3400-\u9fff]')
+bad = []
+for path in sorted(root.rglob('*')):
+  if path.is_dir() or path.suffix not in ('.js', '.qml'):
+    continue
+  if path.name == 'NotificationLocalization.js':
+    continue
+  for lineno, line in enumerate(path.read_text().splitlines(), 1):
+    if pat.search(line):
+      bad.append(f'{path.relative_to(root)}:{lineno}:{line.strip()[:120]}')
+if (bad):
+  print('逻辑比较位置出现中文：')
+  print('\n'.join(bad))
+  sys.exit(1)
+PY
 rg -Fq '拒绝使用不安全的显示器名称' \
   "$plugin_root/testuser.notifications/components/NotificationLocalization.js"
 rg -Fq '未找到 " + match[1] + " 在工作区 "' \
