@@ -7,6 +7,7 @@
 - 补齐菜单翻译：更新通道 Edge（前沿版）、卸载 AI 标题、免 sudo Docker（设置与卸载）。
 - 插件克隆数量由 22 个调整为 21 个；菜单根标题通过配置显式汉化为“开始”。
 - 新增集成检查：协议值位置不得出现中文的断言，防止同类回归。
+- 修复电源模式标签定位失效导致同步中断的问题：新版 Omarchy 在模式标签前加了 `root.managedByWindows ? … :` 三元表达式，锚点去掉 `text: ` 前缀后重新匹配。
 - Agents 状态栏新增 Grok Build 与 Kimi Code 的订阅用量和限额展示。
 - 为 Grok、Kimi 增加随 Omarchy 主题切换的浅色与深色图标。
 - 兼容新版 Codex CLI 的审批策略，并延长 app-server 初始化等待时间。
