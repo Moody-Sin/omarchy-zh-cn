@@ -6,6 +6,8 @@
 
 ### 修复与补全
 
+- **安装器兼容性增强**：
+  - 修复开发工作区（Dev Checkout）环境下 `omarchy version` 输出 `dev (<hash>)` 导致安装器版本检查误拒的问题：安装器现能自动追溯解析并读取开发检出中的真实版本文件，确保开发环境与正式包一致平滑安装。
 - **顶栏指示器与微件漏译**：
   - 补齐免密码 Sudo 指示器提示与通知：`Disable Passwordless Sudo`（禁用免密码 sudo）、`Passwordless Sudo`（免密码 sudo）、`Could not disable passwordless sudo`（无法禁用免密码 sudo）、`Check the sudo configuration and try again.`（请检查 sudo 配置并重试。）。
   - 补齐麦克风状态提示：`Microphone muted`（麦克风已静音）、`Microphone in use`（麦克风正在使用）、`Microphone live`（麦克风已开启）。

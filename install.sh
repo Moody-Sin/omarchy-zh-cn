@@ -89,10 +89,24 @@ for command_name in node jq gum omarchy omarchy-plugin-catalog omarchy-shell; do
 done
 
 version=$(omarchy version 2>/dev/null || true)
-[[ $version == 4.* ]] || {
-  echo "当前仅支持 Omarchy 4，检测到：${version:-未知版本}" >&2
-  exit 1
-}
+if [[ $version != 4.* ]]; then
+  # 开发工作区检出下，omarchy version 会输出 "dev (<hash>)"，
+  # 此时尝试读取其检出根目录下的 version 文件确认版本。
+  dev_version=""
+  if command -v omarchy >/dev/null 2>&1; then
+    omarchy_bin=$(command -v omarchy)
+    omarchy_root=$(cd -- "$(dirname -- "$omarchy_bin")/.." 2>/dev/null && pwd || true)
+    if [[ -f $omarchy_root/version ]]; then
+      dev_version=$(cat "$omarchy_root/version" 2>/dev/null || true)
+    fi
+  fi
+  if [[ $dev_version == 4.* ]]; then
+    version="$version ($dev_version)"
+  else
+    echo "当前仅支持 Omarchy 4，检测到：${version:-未知版本}" >&2
+    exit 1
+  fi
+fi
 
 user_name=${USER:-$(id -un)}
 [[ $user_name =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
