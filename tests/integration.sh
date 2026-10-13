@@ -84,6 +84,8 @@ if (menu["learn.herdr-keybindings"].label !== "Herdr 快捷键") throw new Error
 if (menu["remove.ai.chatgpt"].label !== "ChatGPT 桌面版") throw new Error("ChatGPT 移除未汉化")
 if (menu["remove.ai.claude"].label !== "Claude 桌面版") throw new Error("Claude 移除未汉化")
 if (menu["remove.ai.grok-bot"].label !== "Grok 机器人") throw new Error("Grok 机器人移除未汉化")
+if (menu["install.ai.hermes"].label !== "Hermes 桌面版") throw new Error("Hermes 安装未汉化")
+if (menu["remove.ai.hermes"].label !== "Hermes 桌面版") throw new Error("Hermes 移除未汉化")
 if (menu["learn.keybindings"].action !== home + "/.local/bin/omarchy-menu-keybindings-zh") {
   throw new Error("快捷键入口路径不正确")
 }
@@ -115,6 +117,9 @@ rg -Fq '开始身份认证流程' "$plugin_root/testuser.dropbox/Panel.qml"
 rg -Fq '从服务菜单安装 Dropbox' "$plugin_root/testuser.dropbox/Panel.qml"
 rg -Fq '已用 ' "$plugin_root/testuser.dropbox/Model.js"
 rg -Fq '刚刚' "$plugin_root/testuser.dropbox/Model.js"
+
+rg -Fq '日出' "$plugin_root/testuser.elsewhen/DaylightStrip.qml"
+rg -Fq '日落' "$plugin_root/testuser.elsewhen/DaylightStrip.qml"
 
 rg -Fq '开启 Tailscale' "$plugin_root/testuser.tailscale/Panel.qml"
 rg -Fq '关闭 Tailscale' "$plugin_root/testuser.tailscale/Panel.qml"

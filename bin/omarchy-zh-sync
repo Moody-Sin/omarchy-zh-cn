@@ -603,6 +603,33 @@ const keybindingZh = {
   "Universal paste": "通用粘贴", "Volume down": "降低音量", "Volume down precise": "小幅降低音量",
   "Volume up": "提高音量", "Volume up precise": "小幅提高音量", "World clock": "世界时钟",
   "X Post": "发布 X 帖子",
+  "Toggle full screen desktop": "切换桌面全屏",
+  "Capture highlighted window": "截取高亮窗口",
+  "Capture entire screen": "截取整个屏幕",
+  "Select next window to capture": "选择下一个截图窗口",
+  "Select previous window to capture": "选择上一个截图窗口",
+  "Select window to capture": "选择截图窗口",
+  "Apps": "应用",
+  "Bar panel ": "顶栏面板",
+  "ChatGPT": "ChatGPT",
+  "Docker": "Docker",
+  "Grok": "Grok",
+  "Herdr": "Herdr",
+  "Move window silently to workspace ": "将窗口静默移到工作区",
+  "Move window to group on bottom": "将窗口移到下方分组",
+  "Move window to group on left": "将窗口移到左侧分组",
+  "Move window to group on right": "将窗口移到右侧分组",
+  "Move window to group on top": "将窗口移到上方分组",
+  "Move window to workspace ": "将窗口移到工作区",
+  "Obsidian": "Obsidian",
+  "Omawrite": "Omawrite",
+  "Signal": "Signal",
+  "Switch to group window ": "切换到分组窗口",
+  "Switch to workspace ": "切换到工作区",
+  "Tmux": "Tmux",
+  "WhatsApp": "WhatsApp",
+  "X": "X",
+  "YouTube": "YouTube",
   "Zoom in": "放大", "Zoom in (JIS + key)": "放大（JIS + 键）"
 };
 
@@ -1105,6 +1132,9 @@ const menuZh = {
   "remove.ai.grok-bot": {
     "label": "Grok 机器人"
   },
+  "remove.ai.hermes": {
+    "label": "Hermes 桌面版"
+  },
   "setup.security.sudoless-docker": {
     "label": "免 sudo 运行 Docker"
   },
@@ -1182,6 +1212,9 @@ const menuZh = {
   },
   "install.ai.grok-bot": {
     "label": "Grok 机器人"
+  },
+  "install.ai.hermes": {
+    "label": "Hermes 桌面版"
   },
   "install.gaming.xbox-cloud": {
     "label": "Xbox 云游戏"
@@ -1544,12 +1577,23 @@ ${assignments}
     if (number ~ /^Switch to group window [0-9]+$/) {
       sub(/^Switch to group window /, "", number); return "切换到分组窗口 " number
     }
-    if (action == "Bar panel") return "顶栏面板"
-    if (action == "Move window silently to workspace") return "将窗口静默移到工作区"
-    if (action == "Move window to workspace") return "将窗口移到工作区"
-    if (action == "Switch to workspace") return "切换到工作区"
-    if (action == "Switch to group window") return "切换到分组窗口"
+    if (action == "Bar panel" || action == "Bar panel ") return "顶栏面板"
+    if (action == "Move window silently to workspace" || action == "Move window silently to workspace ") return "将窗口静默移到工作区"
+    if (action == "Move window to workspace" || action == "Move window to workspace ") return "将窗口移到工作区"
+    if (action == "Switch to workspace" || action == "Switch to workspace ") return "切换到工作区"
+    if (action == "Switch to group window" || action == "Switch to group window ") return "切换到分组窗口"
     if (action == "Apps") return "应用"
+    if (action == "ChatGPT") return "ChatGPT"
+    if (action == "Docker") return "Docker"
+    if (action == "Grok") return "Grok"
+    if (action == "Herdr") return "Herdr"
+    if (action == "Obsidian") return "Obsidian"
+    if (action == "Omawrite") return "Omawrite"
+    if (action == "Signal") return "Signal"
+    if (action == "Tmux") return "Tmux"
+    if (action == "WhatsApp") return "WhatsApp"
+    if (action == "X") return "X"
+    if (action == "YouTube") return "YouTube"
     if (action == "Move window to group on bottom") return "将窗口移到下方分组"
     if (action == "Move window to group on left") return "将窗口移到左侧分组"
     if (action == "Move window to group on right") return "将窗口移到右侧分组"
@@ -1901,6 +1945,11 @@ function rebuildPlugin(catalogEntry) {
               'readonly property string hereLine: "本地当前时间为 " + localTime'
             );
           }
+        }
+        if (path.basename(file) === "DaylightStrip.qml") {
+          after = after
+            .replace('name: "Sunrise"', 'name: "日出"')
+            .replace('name: "Sunset"', 'name: "日落"');
         }
       }
       if (sourceId === "omarchy.dock") {

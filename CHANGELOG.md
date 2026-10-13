@@ -22,12 +22,14 @@
   - 补齐 Dropbox 相对时间格式化（`刚刚`、`分钟前`、`小时前`、`天前`、`个月前`、`年前`、`未知时间`）。
   - 补齐 Dropbox 与 Tailscale 操作状态与错误弹窗（操作员授权、节点列表拉取失败、登录失败、命令执行失败等）。
 - **快捷键（`keybindings`）覆盖与术语统一**：
-  - 补齐 18 个上游原生快捷键缺失动作汉化：`Select all`（全选）、`Switch input language (back)`（切换/反向切换输入语言）、`Cycle workspace layout (back)`（轮换/反向轮换工作区布局）、`Direct input for the terminal prefix`（直接输入终端前缀）、`Minimize window to the dock`（将窗口最小化到程序坞）、`Toggle transparency on a window`（切换窗口透明度，修复上游命名不匹配导致的漏译）、`World clock`（世界时钟）、`Apps`（应用）、`Zoom in (JIS + key)`（放大（JIS + 键））、Google 系列应用等。
+  - 补齐上游全部 27 个原生快捷键缺失动作汉化：`Toggle full screen desktop`（切换桌面全屏）、`Capture highlighted window`（截取高亮窗口）、`Capture entire screen`（截取整个屏幕）、`Select (next/previous) window to capture`（选择截图窗口/上一个/下一个）、`Select all`（全选）、`Switch input language (back)`（切换/反向切换输入语言）、`Cycle workspace layout (back)`（轮换/反向轮换工作区布局）、`Direct input for the terminal prefix`（直接输入终端前缀）、`Minimize window to the dock`（将窗口最小化到程序坞）、`Toggle transparency on a window`（切换窗口透明度，修复上游命名不匹配导致的漏译）、`World clock`（世界时钟）、`Apps`（应用）、`Zoom in (JIS + key)`（放大（JIS + 键））、Google 系列应用等，实现上游 193 项快捷键 100% 汉化覆盖。
   - 统一动态顶栏术语：将 awk 动态替换中的 `状态栏面板` 修正为规范的 `顶栏面板`。
 - **菜单（Menu）对齐与规范化**：
-  - 统一安装与卸载菜单项名称对齐：`remove.ai.chatgpt`（ChatGPT 桌面版）、`remove.ai.claude`（Claude 桌面版）、`remove.ai.grok-bot`（Grok 机器人）。
+  - 统一安装与卸载菜单项名称对齐：`install/remove.ai.hermes`（Hermes 桌面版）、`remove.ai.chatgpt`（ChatGPT 桌面版）、`remove.ai.claude`（Claude 桌面版）、`remove.ai.grok-bot`（Grok 机器人）。
   - 规范学习菜单项名称：`learn.tmux-keybindings`（Tmux 快捷键）、`learn.herdr-keybindings`（Herdr 快捷键）。
   - 统一安全密钥与代理命名：`setup.security.ssh-agent` 对齐为 `SSH 代理`；FIDO2 相关菜单项规范为 `FIDO2 安全密钥`。
+- **面板微件与极客文案润色**：
+  - 补齐 Elsewhen 世界时钟日照条（`DaylightStrip.qml`）日出与日落标记汉化：`Sunrise`（日出）、`Sunset`（日落）。
 - **通知中心与极客文案润色**：
   - 补充 `NotificationLocalization.js` 缺失通知精确匹配（免密码 sudo 失败、FIDO2 认证处理、Taildrop 传输失败等）。
   - 润色蓝牙状态趣味文案（`正在召唤耳机`、`正在打磨数据包`、`正在联络维京海盗（蓝牙）`、`正在召唤扬声器`、`正在驯服无线电`、`正在解开虚拟线缆`、`正在调教编解码器`）。
