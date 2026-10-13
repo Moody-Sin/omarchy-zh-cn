@@ -514,10 +514,10 @@ const keybindingZh = {
   "Save window width": "保存窗口宽度", "Screenrecording": "屏幕录制", "Screenshot": "截图",
   "Scroll active workspace backward": "向后滚动活动工作区", "Scroll active workspace forward": "向前滚动活动工作区",
   "Set reminder": "设置提醒", "Share": "分享", "Show battery remaining": "显示电池剩余时间",
-  "Show reminders": "显示提醒", "Show time": "显示时间", "Shrink window left": "从左侧收缩窗口",
-  "Shrink window left a little": "从左侧小幅收缩窗口", "Shrink window left a lot": "从左侧大幅收缩窗口",
-  "Shrink window up": "从上方收缩窗口", "Shrink window up a little": "从上方小幅收缩窗口",
-  "Shrink window up a lot": "从上方大幅收缩窗口", "Start dictation (push-to-talk)": "开始听写（按住说话）",
+  "Show reminders": "显示提醒", "Show time": "显示时间", "Shrink window left": "收缩窗口左侧",
+  "Shrink window left a little": "小幅收缩窗口左侧", "Shrink window left a lot": "大幅收缩窗口左侧",
+  "Shrink window up": "收缩窗口上方", "Shrink window up a little": "小幅收缩窗口上方",
+  "Shrink window up a lot": "大幅收缩窗口上方", "Start dictation (push-to-talk)": "开始听写（按住说话）",
   "Stop dictation (push-to-talk)": "停止听写（按住说话）", "Swap window down": "向下交换窗口",
   "Swap window to the left": "向左交换窗口", "Swap window to the right": "向右交换窗口",
   "Swap window up": "向上交换窗口", "Switch audio output": "切换音频输出",
@@ -527,7 +527,7 @@ const keybindingZh = {
   "Toggle laptop display mirroring": "切换笔记本显示器镜像", "Toggle locking on idle": "切换空闲自动锁定",
   "Toggle menu": "开关菜单", "Toggle nightlight": "切换夜灯", "Toggle scratchpad": "切换暂存区",
   "Toggle silencing notifications": "切换通知静音", "Toggle single-window square aspect": "切换单窗口方形比例",
-  "Toggle top bar": "切换顶部状态栏", "Toggle touchpad": "切换触控板", "Toggle weather": "切换天气",
+  "Toggle top bar": "切换顶栏", "Toggle touchpad": "切换触控板", "Toggle weather": "切换天气",
   "Toggle window floating/tiling": "切换窗口浮动/平铺", "Toggle window gaps": "切换窗口间距",
   "Toggle window grouping": "切换窗口分组", "Toggle window split": "切换窗口分割方向",
   "Toggle window transparency": "切换窗口透明度", "Toggle workspace layout": "切换工作区布局",
@@ -884,21 +884,6 @@ const menuZh = {
   "trigger.toggle.nightlight": {
     "label": "夜间模式"
   },
-  "trigger.toggle.top-bar": {
-    "label": "菜单栏"
-  },
-  "trigger.toggle.battery-percentage": {
-    "label": "电量百分比"
-  },
-  "trigger.toggle.workspace-layout": {
-    "label": "工作区布局"
-  },
-  "trigger.toggle.window-gaps": {
-    "label": "窗口间距"
-  },
-  "trigger.toggle.one-window-ratio": {
-    "label": "单窗口比例"
-  },
   "trigger.tests.network-speedtest": {
     "label": "网络测速"
   },
@@ -917,32 +902,11 @@ const menuZh = {
   "style.font": {
     "label": "字体"
   },
-  "style.bar": {
-    "label": "菜单栏"
-  },
-  "style.bar.position": {
-    "label": "位置"
-  },
-  "style.bar.transparency": {
-    "label": "透明度"
-  },
   "style.screensaver": {
     "label": "屏幕保护"
   },
   "style.about": {
     "label": "关于"
-  },
-  "style.bar.position.top": {
-    "label": "顶部"
-  },
-  "style.bar.position.bottom": {
-    "label": "底部"
-  },
-  "style.bar.position.left": {
-    "label": "左侧"
-  },
-  "style.bar.position.right": {
-    "label": "右侧"
   },
   "style.about.text": {
     "label": "编辑文字"
@@ -1049,7 +1013,7 @@ const menuZh = {
     "label": "免密码管理权限"
   },
   "setup.security.sudoless-docker": {
-    "label": "免 sudo 的 Docker"
+    "label": "免 sudo 运行 Docker"
   },
   "setup.direct-boot": {
     "label": "直接启动"
@@ -1122,9 +1086,6 @@ const menuZh = {
   },
   "install.ai.claude": {
     "label": "Claude 桌面版"
-  },
-  "install.ai.dictation": {
-    "label": "语音输入"
   },
   "install.ai.grok-bot": {
     "label": "Grok 机器人"
@@ -1201,7 +1162,7 @@ const menuZh = {
     "label": "指纹"
   },
   "remove.security.sudoless-docker": {
-    "label": "免 sudo 的 Docker"
+    "label": "免 sudo 运行 Docker"
   },
   "remove.gaming.xbox-cloud": {
     "label": "Xbox 云游戏"
