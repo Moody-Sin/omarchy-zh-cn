@@ -26,6 +26,8 @@
 - 安装周期检查新增断言：卸载后不得残留 `omarchy-system` 等私有脚本、不得留下旧状态目录、绑定块标记被破坏时能回滚到安装前内容。
 - 补充 `.gitignore`：Python 缓存、虚拟环境与本地同步临时产物。
 
+### 本次一并包含此前未发布的改动
+
 - 修复 Omarchy 从开发工作区运行时汉化内容停留在旧版本的问题：同步器原先硬编码读取 `/usr/share/omarchy`，而 `omarchy` 命令可能来自开发检出。现按 `OMARCHY_PATH`、PATH 上的 `omarchy`、包目录的顺序解析真实安装根，菜单、更新脚本、快捷键面板与测速组件都从同一来源读取；两个测试脚本也使用同样的解析顺序。
 - 兼容上游把 `omarchy-system-logout`、`omarchy-system-reboot`、`omarchy-system-shutdown` 合并为 `omarchy system <注销|重启|关机>`：新增 `omarchy-system` 的翻译，并让同步器跳过上游已删除的脚本、同时清理上一版残留的副本，避免私有目录里的旧命令继续遮蔽新命令。
 - 补齐开发版新增的 60 多个菜单项翻译：程序坞与顶栏（位置、背景、指示器、电池百分比）、窗口圆角与透明度、窗口间距、工作区布局、动画、Herdr 主题同步、输入法与键盘布局、默认语音输入、Antigravity 与 Ori、Voxtype 与 Superwhisper、SSH 代理、Claude 桌面版等。
