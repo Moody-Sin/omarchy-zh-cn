@@ -73,6 +73,7 @@ if (menu["learn.keybindings"].label !== "快捷键") throw new Error("快捷键�
 if (menu["root"].label !== "开始") throw new Error("根菜单标题未汉化")
 if (menu["update.channel.edge"].label !== "前沿版") throw new Error("Edge 通道未汉化")
 if (menu["remove.ai"].title !== "卸载") throw new Error("AI 卸载标题未汉化")
+if (menu["install.service.1password"].label !== "1Password") throw new Error("1Password 占位符未修正")
 if (menu["setup.security.sudoless-docker"].label !== "免 sudo 的 Docker") throw new Error("免 sudo Docker 未汉化")
 if (menu["remove.security.sudoless-docker"].label !== "免 sudo 的 Docker") throw new Error("移除免 sudo Docker 未汉化")
 if (menu["learn.keybindings"].action !== home + "/.local/bin/omarchy-menu-keybindings-zh") {
@@ -82,6 +83,10 @@ if (menu["update.omarchy"].action !== "omarchy-launch-floating-terminal-with-pre
   throw new Error("系统更新入口路径不正确")
 }
 NODE
+
+rg -Fq '重新登录 ' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '在新的' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '将周起始日设为 ' "$plugin_root/testuser.clock/Panel.qml"
 
 rg -Fq '"scrolling": "滚动布局"' \
   "$plugin_root/testuser.notifications/components/NotificationLocalization.js"

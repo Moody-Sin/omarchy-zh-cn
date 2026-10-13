@@ -108,7 +108,7 @@ const zh = {
 
   "Back to today": "返回今天", "BORN": "出生年份", "year": "年份", "LIVE TO": "预计寿命",
   "LIFE": "人生", "Memento Mori": "珍惜此刻", "W": "周", "Clock": "日期与时间",
-  "Start weeks on ": "每周开始于",
+  "Start weeks on ": "将周起始日设为 ",
   "Previous month": "上个月", "Next month": "下个月",
 
   "Display": "显示器", "BRIGHTNESS": "亮度", "FIXED BRIGHTNESS": "固定亮度",
@@ -1081,6 +1081,9 @@ const menuZh = {
   "install.service": {
     "label": "服务"
   },
+  "install.service.1password": {
+    "label": "1Password"
+  },
   "install.service.microsoft": {
     "label": "Microsoft"
   },
@@ -1828,17 +1831,19 @@ function rebuildPlugin(catalogEntry) {
       if (sourceId === "omarchy.agents" && path.basename(file) === "Panel.qml") {
         // 两处都是拼接串：翻译固定前缀，保留运行时拼接的动态名称。
         const signInTooltipSource = 'tooltip: "Sign in to " + (section.provider ? section.provider.providerName : "") + " again"';
-        if (!after.includes(signInTooltipSource)) throw new Error("Agents 插件结构已变化：重新登录提示");
-        after = after.replace(
-          signInTooltipSource,
-          'tooltip: "重新登录 " + (section.provider ? section.provider.providerName : "")'
-        );
+        if (after.includes(signInTooltipSource)) {
+          after = after.replace(
+            signInTooltipSource,
+            'tooltip: "重新登录 " + (section.provider ? section.provider.providerName : "")'
+          );
+        }
         const startTileSource = 'text: "Start your default agent on a new " + tile.title.toLowerCase()';
-        if (!after.includes(startTileSource)) throw new Error("Agents 插件结构已变化：启动助手提示");
-        after = after.replace(
-          startTileSource,
-          'text: "用默认 AI 助手新建" + tile.title.toLowerCase()'
-        );
+        if (after.includes(startTileSource)) {
+          after = after.replace(
+            startTileSource,
+            'text: "在新的 " + tile.title + " 中启动默认 AI 助手"'
+          );
+        }
       }
       if (sourceId === "omarchy.weather" && path.basename(file) === "Panel.qml") {
         after = after.replace(
