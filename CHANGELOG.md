@@ -2,6 +2,23 @@
 
 本项目遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 0.3.0 - 2026-10-13
+
+### 修复
+
+- 修复上游 `install.service.1password` 菜单占位符泄漏问题：上游原生菜单将 1Password 服务标签硬编码为 `1Password`，现已在 `menuZh` 中清洗并显式声明为正确服务名称。
+- 修复 AI 助手 (`omarchy.agents`) 面板两处动态拼接字符串漏译：针对重新登录提示 (`Sign in to ... again`) 与新建任务启动助手提示 (`Start your default agent on a new ...`)，补充 QML 结构化源码替换，彻底消除英文残留。
+- 修复日历面板周起始提示语拼接生硬问题：将 `Start weeks on ` 调整为符合中文习惯的 `将周起始日设为 `。
+- 清理 `NotificationLocalization.js` 中重复定义的 `Voxtype Dictation Ready` 键及多余的 `Theme not applied everywhere` 正则分支。
+
+### 优化与调整
+
+- 统一桌面“顶栏/状态栏”术语体系：快捷键面板 `Toggle top bar` 统一对齐为“切换顶栏”。
+- 规范平铺窗口调整快捷键动作描述：将“从左侧/上方收缩窗口”规范为“收缩窗口左侧/上方”。
+- 润色系统设置菜单文案：将 `setup.security.sudoless-docker` 润色为更自然的“免 sudo 运行 Docker”。
+- 清理 `menuZh` 中 13 处因上游菜单重构而废弃的历史遗留死代码键。
+- 润色蓝牙扫描、网络监测与电源能耗状态下的趣味极客文案（保留维京海盗、光信号折射、比特连接与阶梯耗电等幽默风味）。
+
 ## 0.2.0 - 2026-10-13
 
 ### 修复
