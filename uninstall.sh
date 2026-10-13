@@ -22,7 +22,10 @@ UPDATE_HELPERS=(
   omarchy-update-system-pkgs-when-conflicted omarchy-migrate
   omarchy-update-aur-pkgs omarchy-update-mise omarchy-update-orphan-pkgs
   omarchy-update-restart omarchy-update-dev omarchy-update-stay-awake
-  omarchy-update-analyze-logs omarchy-hook omarchy-system-reboot
+  omarchy-update-analyze-logs omarchy-hook omarchy-system
+  # 上游把 logout/reboot/shutdown 合并成 omarchy-system，旧版本生成过这三个
+  # 独立脚本，一并清理，避免私有 bin 目录残留遮蔽上游命令。
+  omarchy-system-logout omarchy-system-reboot omarchy-system-shutdown
   omarchy-restart-shell
 )
 ASSUME_YES=0
@@ -74,15 +77,24 @@ elif [[ -f $STATE_DIR/original/menu-was-absent ]]; then
   rm -f "$MENU_FILE"
 fi
 
-if [[ -f $BINDINGS_FILE ]] && grep -Fq -- '-- >>> omarchy-zh-cn' "$BINDINGS_FILE"; then
-  cp -a "$BINDINGS_FILE" "$BINDINGS_FILE.omarchy-zh-cn-uninstall-$timestamp.bak"
-  temporary="$BINDINGS_FILE.zh-new-$$"
-  awk '
-    $0 == "-- >>> omarchy-zh-cn" { managed = 1; next }
-    $0 == "-- <<< omarchy-zh-cn" { managed = 0; next }
-    !managed { print }
-  ' "$BINDINGS_FILE" >"$temporary"
-  mv "$temporary" "$BINDINGS_FILE"
+if [[ -f $BINDINGS_FILE ]]; then
+  if grep -Fq -- '-- >>> omarchy-zh-cn' "$BINDINGS_FILE"; then
+    cp -a "$BINDINGS_FILE" "$BINDINGS_FILE.omarchy-zh-cn-uninstall-$timestamp.bak"
+    temporary="$BINDINGS_FILE.zh-new-$$"
+    awk '
+      $0 == "-- >>> omarchy-zh-cn" { managed = 1; next }
+      $0 == "-- <<< omarchy-zh-cn" { managed = 0; next }
+      !managed { print }
+    ' "$BINDINGS_FILE" >"$temporary"
+    mv "$temporary" "$BINDINGS_FILE"
+  elif grep -Fq 'omarchy-menu-keybindings-zh' "$BINDINGS_FILE" &&
+    [[ -f $STATE_DIR/original/bindings.lua ]]; then
+    # 标记行被改动或写入中断，无法按标记剥离：块内容仍在（引用了中文快捷键
+    # 面板），此时用安装前备份回滚。当前内容先另存，不销毁用户配置。
+    cp -a "$BINDINGS_FILE" "$BINDINGS_FILE.omarchy-zh-cn-uninstall-$timestamp.bak"
+    cp -a "$STATE_DIR/original/bindings.lua" "$BINDINGS_FILE"
+    echo "绑定块缺少标记，已从安装前备份恢复：$BINDINGS_FILE"
+  fi
 fi
 
 if [[ -f $STATE_DIR/original/shell.json && -f $SHELL_FILE ]]; then

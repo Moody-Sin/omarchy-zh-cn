@@ -19,3 +19,19 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ripgrep
       - name: Run static checks
         run: ./tests/smoke.sh
+
+  # GitHub Runners have no Omarchy install, and tests/integration.sh and
+  # tests/install-cycle.sh exit 0 there without checking anything. Running
+  # them as a separate job makes that skip visible in the check list instead
+  # of hiding inside a green "smoke" job.
+  omarchy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Report skipped Omarchy checks
+        run: |
+          echo "::notice::跳过集成与安装周期检查：当前 Runner 没有 Omarchy 4。"
+          echo "在有 Omarchy 的机器上请运行 ./tests/smoke.sh，它会一并调用这两个脚本。"

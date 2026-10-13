@@ -4,8 +4,18 @@ set -euo pipefail
 
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 
-if [[ ! -d /usr/share/omarchy/shell || ! -x /usr/share/omarchy/bin/omarchy-menu-keybindings ]]; then
-  echo "非 Omarchy 环境，跳过安装周期检查。"
+omarchy_path=${OMARCHY_PATH:-}
+if [[ -z $omarchy_path ]] && command -v omarchy >/dev/null 2>&1; then
+  resolved=$(
+    cd -- "$(dirname -- "$(command -v omarchy)")/.." 2>/dev/null && pwd
+  ) || resolved=
+  [[ -n ${resolved:-} && -d $resolved/shell/plugins ]] && omarchy_path=$resolved
+fi
+omarchy_path=${omarchy_path:-/usr/share/omarchy}
+
+if [[ ! -d $omarchy_path/shell || ! -x $omarchy_path/bin/omarchy-menu-keybindings ]]; then
+  echo "非 Omarchy 环境（找不到 $omarchy_path/shell 或 omarchy-menu-keybindings），安装周期检查未执行。"
+  echo "CI 上这会显示为通过但没有真正校验任何内容；请在 Omarchy 4 机器上运行 ./tests/smoke.sh。"
   exit 0
 fi
 
@@ -112,7 +122,7 @@ test -x "$sandbox_home/.local/share/omarchy-zh-cn/agents/bin/kimi-collector"
 test -x "$sandbox_home/.config/omarchy/hooks/post-update.d/omarchy-zh-post-update"
 rg -Fq '准备更新吗？' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-confirm"
 rg -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
-[[ $(find "$sandbox_home/.config/omarchy/plugins" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l) -eq 21 ]]
+[[ $(find "$sandbox_home/.config/omarchy/plugins" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l) -eq 25 ]]
 [[ $(jq -r '.bar.layout.center[0].unit' "$sandbox_home/.config/omarchy/shell.json") == metric ]]
 
 HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/uninstall.sh" --yes >/dev/null
@@ -128,5 +138,33 @@ rg -Fq 'old-hook' "$sandbox_home/.config/omarchy/hooks/post-update.d/omarchy-zh-
 test ! -e "$sandbox_home/.config/omarchy/extensions/omarchy-menu.jsonc"
 ! rg -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
 [[ $(jq -r '.bar.layout.center[0].unit' "$sandbox_home/.config/omarchy/shell.json") == imperial ]]
+
+# 上游把 logout/reboot/shutdown 合并成 omarchy-system；私有 bin 目录若残留
+# 该脚本会遮蔽上游同名命令，所以卸载后必须消失。
+test ! -e "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-system"
+for retired in omarchy-system-logout omarchy-system-reboot omarchy-system-shutdown; do
+  test ! -e "$sandbox_home/.local/share/omarchy-zh-cn/bin/$retired"
+done
+# 同步器与安装器必须共用同一个状态目录，否则卸载会留下孤立目录。
+test ! -e "$sandbox_home/.local/state/omarchy-zh"
+# 首次安装前 bindings.lua 不存在，应记录“原本不存在”标记而不是伪造备份。
+archived_state=$(find "$sandbox_home/.local/state" -maxdepth 1 -name 'omarchy-zh-cn-uninstalled-*' | head -1)
+[[ -n $archived_state && -f $archived_state/original/bindings-was-absent ]]
+
+# 标记行被破坏时的回滚路径：块内容仍在（引用中文快捷键面板）但剥离标记失效，
+# 必须改用安装前备份恢复，而不是放任残留。
+cat >"$sandbox_home/.config/hypr/bindings.lua" <<'LUA'
+hl.bind("SUPER + Q", "关闭窗口")
+LUA
+HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/install.sh" >/dev/null
+rg -Fq 'omarchy-menu-keybindings-zh' "$sandbox_home/.config/hypr/bindings.lua"
+# 破坏标记，模拟用户手改或写入中断。
+grep -v -e '^-- >>> omarchy-zh-cn$' -e '^-- <<< omarchy-zh-cn$' \
+  "$sandbox_home/.config/hypr/bindings.lua" >"$sandbox_home/bindings.tmp"
+mv "$sandbox_home/bindings.tmp" "$sandbox_home/.config/hypr/bindings.lua"
+! grep -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
+HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/uninstall.sh" --yes >/dev/null
+! grep -Fq 'omarchy-menu-keybindings-zh' "$sandbox_home/.config/hypr/bindings.lua"
+grep -Fq '关闭窗口' "$sandbox_home/.config/hypr/bindings.lua"
 
 echo "隔离安装与卸载周期检查通过。"

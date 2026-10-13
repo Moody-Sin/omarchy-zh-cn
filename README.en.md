@@ -64,6 +64,7 @@ Kimi settings live at `~/.config/omarchy/agents/kimi.json`:
 - Grok and Kimi support in the AI Agents usage widget, including quota displays and theme-aware light/dark marks
 - Compatibility for the `initialize` failure caused when a newer Codex CLI rejects the legacy `untrusted` approval policy
 - Audio, Bluetooth, network, display, power, and weather interfaces
+- Dock context menus, the Tailscale connection panel, the Dropbox sync list, and the Elsewhen world clock interface
 - Dates, months, weekdays, and the calendar
 - Celsius temperatures, `km/h` wind speeds, and original location names from the data source
 - Reminders, notification history, and Omarchy activity notifications
@@ -91,7 +92,7 @@ If your AI assistant can read local files and run terminal commands, send it the
 
 ```text
 Please install this Simplified Chinese localization project on the current Omarchy 4 system:
-https://github.com/QueedWen/omarchy-zh-cn
+https://github.com/Moody-Sin/omarchy-zh-cn
 
 Requirements:
 1. Read README.md, README.en.md, and install.sh first, then check whether the current system, Omarchy version, and dependencies are compatible.
@@ -106,7 +107,7 @@ Requirements:
 ### Manual Installation
 
 ```bash
-git clone https://github.com/QueedWen/omarchy-zh-cn.git
+git clone https://github.com/Moody-Sin/omarchy-zh-cn.git
 cd omarchy-zh-cn
 ./install.sh --dry-run
 ./install.sh
@@ -115,7 +116,7 @@ cd omarchy-zh-cn
 The installer will:
 
 1. Check the Omarchy version and dependencies.
-2. Create 21 user plugin clones through the official `omarchy plugin clone` command.
+2. Create 25 user plugin clones through the official `omarchy plugin clone` command.
 3. Install the localization synchronizer and generate the localized plugins.
 4. Install the Codex/Grok/Kimi usage extension and theme marks for the Agents plugin.
 5. Configure metric units for weather data.

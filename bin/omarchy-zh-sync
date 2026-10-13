@@ -13,16 +13,42 @@ const noRestart = process.argv.includes("--no-restart");
 const adoptExisting = process.argv.includes("--adopt-existing");
 const home = os.homedir();
 const user = process.env.USER || path.basename(home);
+function resolveOmarchyPath() {
+  const candidates = [];
+  if (process.env.OMARCHY_PATH) candidates.push(process.env.OMARCHY_PATH);
+
+  // The `omarchy` command may live in a dev checkout rather than the packaged
+  // install. Trust whatever is actually on PATH before falling back to the
+  // standard package location.
+  try {
+    const command = execFileSync("sh", ["-lc", "command -v omarchy"], { encoding: "utf8" }).trim();
+    if (command) {
+      const resolved = path.resolve(path.dirname(command), "..");
+      const shellDir = path.join(resolved, "shell", "plugins");
+      if (resolved !== "/" && fs.existsSync(shellDir)) candidates.push(resolved);
+    }
+  } catch (_) {}
+
+  candidates.push("/usr/share/omarchy");
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(path.join(candidate, "shell", "plugins"))) return candidate;
+  }
+  throw new Error("找不到 Omarchy 安装目录（已尝试 OMARCHY_PATH、PATH 上的 omarchy 与 /usr/share/omarchy）");
+}
+
+const omarchyPath = resolveOmarchyPath();
 const pluginRoot = path.join(home, ".config/omarchy/plugins");
-const menuDefault = "/usr/share/omarchy/default/omarchy/omarchy-menu.jsonc";
+const menuDefault = path.join(omarchyPath, "default/omarchy/omarchy-menu.jsonc");
 const menuUser = path.join(home, ".config/omarchy/extensions/omarchy-menu.jsonc");
-const stateDir = path.join(home, ".local/state/omarchy-zh");
-const keybindingsSource = "/usr/share/omarchy/bin/omarchy-menu-keybindings";
+// 与 install.sh / uninstall.sh 使用同一个状态目录，避免卸载后残留孤立目录。
+const stateDir = path.join(home, ".local/state/omarchy-zh-cn");
+const keybindingsSource = path.join(omarchyPath, "bin/omarchy-menu-keybindings");
 const keybindingsZh = path.join(home, ".local/bin/omarchy-menu-keybindings-zh");
 const updateZh = path.join(home, ".local/bin/omarchy-update-zh");
-const updateSourceDir = "/usr/share/omarchy/bin";
+const updateSourceDir = path.join(omarchyPath, "bin");
 const updateLocalizerDir = path.join(home, ".local/share/omarchy-zh-cn/bin");
-const speedTestOverlaySource = "/usr/share/omarchy/shell/Ui/SpeedTestOverlay.qml";
+const speedTestOverlaySource = path.join(omarchyPath, "shell/Ui/SpeedTestOverlay.qml");
 const agentsOverlayCandidates = [
   path.join(home, ".local/share/omarchy-zh-cn/agents"),
   path.resolve(__dirname, "../agents-overlay")
@@ -40,7 +66,10 @@ const pluginIds = [
   "omarchy.tray", "omarchy.indicators", "omarchy.system-update", "omarchy.lock", "omarchy.polkit",
   "omarchy.clipboard", "omarchy.emojis", "omarchy.image-picker",
   "omarchy.reminders", "omarchy.speedtest", "omarchy.disk-speedtest",
-  "omarchy.wifiqr"
+  "omarchy.wifiqr",
+  // 这几个插件也有用户可见文案：dock 的右键菜单、Tailscale 的连接面板、
+  // Dropbox 的同步文件列表，以及 Elsewhen 的界面文字。
+  "omarchy.dock", "omarchy.tailscale", "omarchy.dropbox", "omarchy.elsewhen"
 ];
 
 const supportedArgs = new Set(["--quiet", "--no-restart", "--adopt-existing", "--help"]);
@@ -218,7 +247,70 @@ const zh = {
   "When On, write this machine's local usage snapshot and merge snapshots from other machines.": "开启后保存本机用量快照，并合并其他设备的快照。",
   "A folder synced by Syncthing, Dropbox, rsync, etc.": "由 Syncthing、Dropbox 或 rsync 等工具同步的文件夹。",
   "Optional. Defaults to <hostname>.json. Use a different file name on each machine, such as laptop.json or desktop.json.": "可选。默认为 <hostname>.json；每台设备应使用不同文件名。",
-  "Optional stable device name used inside synced aggregate snapshots.": "可选。用于汇总快照的固定设备名称。"
+  "Optional stable device name used inside synced aggregate snapshots.": "可选。用于汇总快照的固定设备名称。",
+  // Dock：程序坞插件的名称、说明与右键菜单文案。
+  "Dock": "程序坞",
+  "App dock shown on floating workspaces": "在浮动工作区上显示的程序坞",
+  "Auto-hide": "自动隐藏",
+  "New Window": "新建窗口",
+  "Keep in Dock": "保留在程序坞",
+  "Remove from Dock": "从程序坞移除",
+  "Quit": "退出",
+  "Open": "打开",
+  "Uninstall": "卸载",
+  "Search apps…": "搜索应用…",
+  "Top": "顶部", "Bottom": "底部", "Left": "左侧", "Right": "右侧",
+  // Tailscale：状态栏面板文案。
+  "Tailscale status, connection switching, machine browsing, and quick copy actions in the Omarchy bar.": "在 Omarchy 状态栏中显示 Tailscale 状态、切换连接、浏览设备并快速复制信息。",
+  "Toggle Tailscale, switch connections, browse machines, and copy machine IPs or names.": "开关 Tailscale、切换连接、浏览设备并复制设备 IP 或名称。",
+  "CONNECTIONS": "连接", "EXIT NODES": "出口节点", "MACHINES": "设备",
+  "Tailscale CLI is not installed or not on PATH.": "未安装 Tailscale CLI，或它不在 PATH 中。",
+  "No Mullvad regions found.": "未找到 Mullvad 地区。",
+  "No machines found on this tailnet.": "此 Tailscale 网络中没有设备。",
+  "Search regions": "搜索地区",
+  "Authorize Tailscale operator": "授权 Tailscale 操作员",
+  "Allow this user to operate this Tailscale profile": "允许此用户操作该 Tailscale 配置文件",
+  // Dropbox：状态栏面板文案。
+  "Dropbox status, storage usage, login, and recent synced files in the Omarchy bar.": "在 Omarchy 状态栏中显示 Dropbox 状态、存储用量、登录入口和最近同步的文件。",
+  "Log in to Dropbox, view storage usage, and open recent synced files.": "登录 Dropbox、查看存储用量并打开最近同步的文件。",
+  "RECENT FILES": "最近的文件",
+  "No synced files found.": "没有找到已同步的文件。",
+  "Stored": "已用容量",
+  "Syncing paused": "同步已暂停",
+  "Status error": "状态获取失败",
+  // Elsewhen：世界时钟界面文字。城市数据与多语言问候语是功能内容，保持原样。
+  "Elsewhen": "世界时钟",
+  "A world clock for the Omarchy shell: the time in several cities at once, with a spinnable globe.": "Omarchy 世界时钟：同时显示多个城市的时间，配有可旋转的地球仪。",
+  "A world clock: one row per city, and a globe.": "世界时钟：每个城市一行，并带一个地球仪。",
+  "World": "世界", "Clock": "时钟",
+  "Jump to a city": "跳转到城市",
+  "Add a city": "添加城市",
+  "+  Add a city": "+  添加城市",
+  "Files": "文件",
+  // 状态指示器选项：上游只给了英文标签，这里补齐。
+  "Passwordless sudo": "免密码 sudo",
+  "Warning while passwordless root access is enabled": "启用免密码 root 权限时发出警告",
+  "Remote session": "远程会话",
+  "Warning while someone is connected through gliff": "有人通过 gliff 连接时发出警告",
+  // Agents 面板的账户与用量界面文案。
+  "MAKE SOMETHING COOL": "做点有意思的东西",
+  "Sign in to an AI coding subscription, and this panel keeps track of how much of it you have left.": "登录 AI 编程订阅后，此面板会跟踪你的剩余额度。",
+  "Start the default agent": "启动默认 AI 助手",
+  "Name this account. It signs in through a private window, so your browser's current account isn't picked up.": "为此账户命名。它通过隐私窗口登录，因此不会使用浏览器当前登录的账户。",
+  "Confirm this code in your browser": "请在浏览器中确认此验证码",
+  "If the page shows a code instead of finishing, paste it here.": "如果页面显示验证码而没有自动完成，请粘贴到这里。",
+  "Open the sign-in page again": "重新打开登录页面",
+  "Sign-in required": "需要登录",
+  "Sign in to this account again": "重新登录此账户",
+  "Balance": "余额",
+  "ACTIVE": "使用中",
+  "Usage unavailable": "用量不可用",
+  "Theme": "主题", "Plugin": "插件", "App": "应用",
+  "Work": "工作", "Code": "代码",
+  // 锁屏与网络面板补充。
+  "Fingerprint reader unavailable": "指纹读取器不可用",
+  "Open Captive Portal": "打开强制门户",
+  "Sign in or accept this network’s terms to access the internet.": "请登录或接受此网络的条款以访问互联网。"
 };
 
 const updateScriptReplacements = {
@@ -295,6 +387,16 @@ const updateScriptReplacements = {
     ["Restarting $service", "正在重启 $service", "服务重启"],
     ["Restarting shell", "正在重启桌面外壳", "外壳重启"],
     ["All plugins have been reloaded", "所有插件已重新加载", "插件重载"]
+  ],
+  // Upstream merged omarchy-system-reboot / -shutdown / -logout into a single
+  // `omarchy system <logout|reboot|shutdown>` command.
+  "omarchy-system": [
+    ["Usage: omarchy-system <logout|reboot|shutdown>", "用法：omarchy-system <注销|重启|关机>", "用法"],
+    ["Logging out", "正在注销", "注销提示"],
+    ["Rebooting", "正在重启", "重启提示"],
+    ["Shutting down", "正在关机", "关机提示"],
+    ["Shutdown in progress", "正在关机", "抑制原因"],
+    ["Could not complete $action. Please try again.", "无法完成操作，请重试。", "失败提示"]
   ],
   "omarchy-system-reboot": [
     ["Rebooting", "正在重启", "重启提示"]
@@ -500,6 +602,173 @@ const menuZh = {
   },
   "trigger.emoji": {
     "label": "表情符号"
+  },
+  "trigger.clipboard-history": {
+    "label": "剪贴板历史"
+  },
+  "trigger.appearance": {
+    "label": "外观"
+  },
+  "trigger.appearance.top-bar": {
+    "label": "顶栏"
+  },
+  "trigger.appearance.top-bar.hide": {
+    "label": "隐藏顶栏"
+  },
+  "trigger.appearance.top-bar.show": {
+    "label": "显示顶栏"
+  },
+  "trigger.appearance.top-bar.position": {
+    "label": "顶栏位置"
+  },
+  "trigger.appearance.top-bar.position.top": {
+    "label": "顶部"
+  },
+  "trigger.appearance.top-bar.position.bottom": {
+    "label": "底部"
+  },
+  "trigger.appearance.top-bar.position.left": {
+    "label": "左侧"
+  },
+  "trigger.appearance.top-bar.position.right": {
+    "label": "右侧"
+  },
+  "trigger.appearance.top-bar.background": {
+    "label": "顶栏背景"
+  },
+  "trigger.appearance.top-bar.background.clear": {
+    "label": "透明"
+  },
+  "trigger.appearance.top-bar.background.glassy": {
+    "label": "毛玻璃"
+  },
+  "trigger.appearance.top-bar.background.opaque": {
+    "label": "不透明"
+  },
+  "trigger.appearance.top-bar.indicators": {
+    "label": "顶栏指示器"
+  },
+  "trigger.appearance.top-bar.indicators.battery-percentage": {
+    "label": "电池百分比"
+  },
+  "trigger.appearance.top-bar.indicators.clock": {
+    "label": "时钟"
+  },
+  // 时钟条目是日期格式示例，按中文习惯给出对应示例，而不是逐字翻译。
+  "trigger.appearance.top-bar.indicators.clock.sunday-24h": {
+    "label": "星期日 14:30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.sunday-12h": {
+    "label": "星期日 下午2:30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.sunday-seconds-24h": {
+    "label": "星期日 14:30:05"
+  },
+  "trigger.appearance.top-bar.indicators.clock.sunday-seconds-12h": {
+    "label": "星期日 下午2:30:05"
+  },
+  "trigger.appearance.top-bar.indicators.clock.time-24h": {
+    "label": "14:30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.time-12h": {
+    "label": "下午2:30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.date-24h": {
+    "label": "5月3日 周日 14:30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.date-12h": {
+    "label": "5月3日 周日 下午2:30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.week": {
+    "label": "2026年5月3日 第18周"
+  },
+  "trigger.appearance.top-bar.indicators.clock.iso": {
+    "label": "2026-05-03 14:30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.stacked-24h": {
+    "label": "14 — 30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.stacked-12h": {
+    "label": "下午2 — 30"
+  },
+  "trigger.appearance.top-bar.indicators.clock.stacked-date": {
+    "label": "5月3日 第18周 26年"
+  },
+  "trigger.appearance.top-bar.indicators.clock.stacked-time": {
+    "label": "14 30"
+  },
+  "trigger.appearance.dock": {
+    "label": "程序坞"
+  },
+  "trigger.appearance.dock.always-on": {
+    "label": "常驻显示"
+  },
+  "trigger.appearance.dock.autohide": {
+    "label": "自动隐藏"
+  },
+  "trigger.appearance.dock.position": {
+    "label": "程序坞位置"
+  },
+  "trigger.appearance.dock.position.top": {
+    "label": "顶部"
+  },
+  "trigger.appearance.dock.position.bottom": {
+    "label": "底部"
+  },
+  "trigger.appearance.dock.position.left": {
+    "label": "左侧"
+  },
+  "trigger.appearance.dock.position.right": {
+    "label": "右侧"
+  },
+  "trigger.appearance.animations": {
+    "label": "动画"
+  },
+  "trigger.appearance.window-corners": {
+    "label": "窗口圆角"
+  },
+  "trigger.appearance.window-corners.rounded": {
+    "label": "圆角"
+  },
+  "trigger.appearance.window-corners.sharp": {
+    "label": "直角"
+  },
+  "trigger.appearance.window-corners.theme": {
+    "label": "跟随主题"
+  },
+  "trigger.appearance.window-gaps": {
+    "label": "窗口间距"
+  },
+  "trigger.appearance.window-transparency": {
+    "label": "窗口透明度"
+  },
+  "trigger.appearance.window-transparency.glassy": {
+    "label": "毛玻璃"
+  },
+  "trigger.appearance.window-transparency.opaque": {
+    "label": "不透明"
+  },
+  "trigger.appearance.window-transparency.transparent": {
+    "label": "半透明"
+  },
+  "trigger.appearance.workspace-layout": {
+    "label": "工作区布局",
+    "title": "默认工作区布局"
+  },
+  "trigger.appearance.workspace-layout.dwindle": {
+    "label": "平铺"
+  },
+  "trigger.appearance.workspace-layout.scrolling": {
+    "label": "滚动"
+  },
+  "trigger.appearance.workspace-layout.floating": {
+    "label": "浮动"
+  },
+  "trigger.appearance.one-window-ratio": {
+    "label": "单窗口比例"
+  },
+  "trigger.appearance.theme-sync": {
+    "label": "Herdr 主题同步"
   },
   "trigger.reminder": {
     "label": "提醒"
@@ -730,6 +999,25 @@ const menuZh = {
     "label": "编辑器",
     "title": "默认编辑器"
   },
+  "setup.default.dictation": {
+    "label": "语音输入",
+    "title": "默认语音输入"
+  },
+  "setup.default.agent.agy": {
+    "label": "Antigravity"
+  },
+  "setup.default.agent.ori": {
+    "label": "Ori"
+  },
+  "setup.typing": {
+    "label": "输入"
+  },
+  "setup.typing.input": {
+    "label": "输入法"
+  },
+  "setup.typing.keyboard": {
+    "label": "键盘布局"
+  },
   "setup.plugin": {
     "label": "插件"
   },
@@ -793,6 +1081,12 @@ const menuZh = {
   "install.service": {
     "label": "服务"
   },
+  "install.service.microsoft": {
+    "label": "Microsoft"
+  },
+  "install.service.slack": {
+    "label": "Slack"
+  },
   "install.development": {
     "label": "开发环境"
   },
@@ -822,6 +1116,9 @@ const menuZh = {
   },
   "install.ai.chatgpt": {
     "label": "ChatGPT 桌面版"
+  },
+  "install.ai.claude": {
+    "label": "Claude 桌面版"
   },
   "install.ai.dictation": {
     "label": "语音输入"
@@ -867,6 +1164,12 @@ const menuZh = {
   "remove.dictation": {
     "label": "语音输入"
   },
+  "remove.dictation.voxtype": {
+    "label": "Voxtype"
+  },
+  "remove.dictation.superwhisper": {
+    "label": "Superwhisper"
+  },
   "remove.gaming": {
     "label": "游戏",
     "title": "卸载"
@@ -874,6 +1177,12 @@ const menuZh = {
   "remove.service": {
     "label": "服务",
     "title": "卸载"
+  },
+  "remove.service.microsoft": {
+    "label": "Microsoft"
+  },
+  "remove.service.ssh-agent": {
+    "label": "SSH 代理"
   },
   "remove.windows": {
     "label": "Windows 虚拟机"
@@ -1053,7 +1362,26 @@ const notificationLocalizationSource = String.raw`function translate(value, appN
     "Screen did not lock before suspend": "睡眠前屏幕未能锁定",
     "Refusing unsafe monitor name": "拒绝使用不安全的显示器名称",
     "Use Super + Alt + Home to save one for this workspace.": "按 Super + Alt + Home 为此工作区保存窗口宽度。",
-    "Restore using Super + Home on this workspace.": "在此工作区按 Super + Home 恢复窗口宽度。"
+    "Restore using Super + Home on this workspace.": "在此工作区按 Super + Home 恢复窗口宽度。",
+    "Animations disabled": "动画已禁用",
+    "Animations enabled": "动画已启用",
+    "Background Intros": "背景动画",
+    "Enabled": "已启用",
+    "Disabled": "已禁用",
+    "Herdr theme sync enabled": "Herdr 主题同步已启用",
+    "Herdr theme sync disabled": "Herdr 主题同步已禁用",
+    "Theme not applied everywhere": "主题未完全应用",
+    "Voxtype Dictation Ready": "Voxtype 语音输入已就绪",
+    "Superwhisper Dictation Ready": "Superwhisper 语音输入已就绪",
+    "Hold Right Alt or F9 to dictate (or toggle with Super + Ctrl + X).": "按住右 Alt 或 F9 开始听写（或按 Super + Ctrl + X 切换）。",
+    "Couldn't add the $name account": "无法添加 $name 账户",
+    "Could not complete $action. Please try again.": "无法完成 $action，请重试。",
+    "New $name sessions now use $label": "新的 $name 会话现在使用 $label",
+    "Recording without $1 audio": "未录制 $1 音频",
+    "The $1 audio could not be added to this recording.": "无法将 $1 音频加入此次录制。",
+    "Connecting…": "正在连接…",
+    "Disconnecting…": "正在断开…",
+    "Forgetting…": "正在忽略…"
   }
   if (Object.prototype.hasOwnProperty.call(exact, original)) return exact[original]
 
@@ -1088,6 +1416,14 @@ const notificationLocalizationSource = String.raw`function translate(value, appN
   if ((match = original.match(/^Transcoded to (.+)$/))) return "已转码为 " + match[1]
   if ((match = original.match(/^No saved width found for (.+) on workspace (.+)$/))) return "未找到 " + match[1] + " 在工作区 " + match[2] + " 保存的窗口宽度"
   if ((match = original.match(/^Saved width for (.+) on workspace (.+)$/))) return "已保存 " + match[1] + " 在工作区 " + match[2] + " 的窗口宽度"
+  // 下面几条上游用 shell 变量拼接，运行时才展开，只能按模式匹配。
+  if ((match = original.match(/^Could not complete (.+)\. Please try again\.$/))) return "无法完成 " + match[1] + "，请重试。"
+  if ((match = original.match(/^(.+) failed$/))) return match[1] + " 失败"
+  if ((match = original.match(/^Couldn't add the (.+) account$/))) return "无法添加 " + match[1] + " 账户"
+  if ((match = original.match(/^New (.+) sessions now use (.+)$/))) return "新的 " + match[1] + " 会话现在使用 " + match[2]
+  if ((match = original.match(/^Recording without (.+) audio$/))) return "未录制 " + match[1] + " 音频"
+  if ((match = original.match(/^The (.+) audio could not be added to this recording\.$/))) return "无法将 " + match[1] + " 音频加入此次录制。"
+  if ((match = original.match(/^Theme not applied everywhere$/))) return "主题未完全应用"
 
   var localized = original
     .replace(/\s*·\s*Temp\s+/g, "  ·  温度 ")
@@ -1219,7 +1555,16 @@ function syncUpdateScripts() {
   fs.mkdirSync(updateLocalizerDir, { recursive: true });
   for (const [scriptName, replacements] of Object.entries(updateScriptReplacements)) {
     const source = path.join(updateSourceDir, scriptName);
-    if (!fs.existsSync(source)) throw new Error(`找不到 Omarchy 更新脚本：${source}`);
+    const target = path.join(updateLocalizerDir, scriptName);
+
+    // Upstream occasionally merges or drops a helper (omarchy-system-reboot,
+    // -shutdown and -logout became one `omarchy-system`). Skip what no longer
+    // exists instead of failing, and drop a stale localized copy so the
+    // private bin dir never shadows a command upstream removed.
+    if (!fs.existsSync(source)) {
+      if (fs.existsSync(target)) fs.rmSync(target, { force: true });
+      continue;
+    }
 
     let content = fs.readFileSync(source, "utf8");
     for (const [from, to, label] of replacements) {
@@ -1227,7 +1572,6 @@ function syncUpdateScripts() {
       content = content.split(from).join(to);
     }
 
-    const target = path.join(updateLocalizerDir, scriptName);
     const temporary = `${target}.new-${process.pid}`;
     fs.writeFileSync(temporary, content, { mode: 0o755 });
     fs.chmodSync(temporary, 0o755);
@@ -1445,6 +1789,56 @@ function rebuildPlugin(catalogEntry) {
             'Qt.formatDate(root.viewDate, "MMMM yyyy").toUpperCase()',
             'Qt.locale("zh_CN").toString(root.viewDate, "yyyy年M月")'
           );
+      }
+      if (sourceId === "omarchy.image-picker" && path.basename(file) === "ImagePicker.qml") {
+        // 消息由前缀 + 主题名 + "?" 拼接而成，只有前缀和问号需要汉化。
+        const deleteMessageSource = 'message: "Do you want to delete " + (root.pendingDeleteTheme ? root.labelForPath(root.pendingDeleteTheme) : "") + "?"';
+        if (!after.includes(deleteMessageSource)) throw new Error("图片选择器插件结构已变化：删除确认");
+        after = after.replace(
+          deleteMessageSource,
+          'message: "确定要删除 " + (root.pendingDeleteTheme ? root.labelForPath(root.pendingDeleteTheme) : "") + " 吗？"'
+        );
+      }
+      if (sourceId === "omarchy.elsewhen") {
+        // 这几个字符串上游写成字面 \u2026（反斜杠 + u2026），全局替换按 JSON
+        // 字面量比较匹配不到，所以在这里按原文字节替换。
+        const escaped = [
+          ['"Search cities\\u2026"', '"搜索城市\\u2026"'],
+          ['"Loading zones\\u2026"', '"正在加载时区\\u2026"'],
+          ['"Loading cities\\u2026"', '"正在加载城市\\u2026"']
+        ];
+        for (const [from, to] of escaped) after = after.split(from).join(to);
+      }
+      if (sourceId === "omarchy.dock") {
+        // 两处确认/提示消息是拼接串，只翻译固定部分，应用名保持原样。
+        const uninstallSource = 'message: "Do you want to uninstall " + (root.uninstallEntry && root.appLibrary ? root.appLibrary.entryName(root.uninstallEntry) : "") + "?"';
+        if (after.includes(uninstallSource)) {
+          after = after.replace(
+            uninstallSource,
+            'message: "确定要卸载 " + (root.uninstallEntry && root.appLibrary ? root.appLibrary.entryName(root.uninstallEntry) : "") + " 吗？"'
+          );
+        }
+        if (after.includes('text: "No apps match “" + root.filterText + "”"')) {
+          after = after.replace(
+            'text: "No apps match “" + root.filterText + "”"',
+            'text: "没有匹配 “" + root.filterText + "” 的应用"'
+          );
+        }
+      }
+      if (sourceId === "omarchy.agents" && path.basename(file) === "Panel.qml") {
+        // 两处都是拼接串：翻译固定前缀，保留运行时拼接的动态名称。
+        const signInTooltipSource = 'tooltip: "Sign in to " + (section.provider ? section.provider.providerName : "") + " again"';
+        if (!after.includes(signInTooltipSource)) throw new Error("Agents 插件结构已变化：重新登录提示");
+        after = after.replace(
+          signInTooltipSource,
+          'tooltip: "重新登录 " + (section.provider ? section.provider.providerName : "")'
+        );
+        const startTileSource = 'text: "Start your default agent on a new " + tile.title.toLowerCase()';
+        if (!after.includes(startTileSource)) throw new Error("Agents 插件结构已变化：启动助手提示");
+        after = after.replace(
+          startTileSource,
+          'text: "用默认 AI 助手新建" + tile.title.toLowerCase()'
+        );
       }
       if (sourceId === "omarchy.weather" && path.basename(file) === "Panel.qml") {
         after = after.replace(

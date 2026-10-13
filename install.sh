@@ -35,6 +35,7 @@ PLUGIN_IDS=(
   omarchy.system-update omarchy.lock omarchy.polkit omarchy.clipboard
   omarchy.emojis omarchy.image-picker omarchy.reminders omarchy.speedtest
   omarchy.disk-speedtest omarchy.wifiqr
+  omarchy.dock omarchy.tailscale omarchy.dropbox omarchy.elsewhen
 )
 
 # 旧版本曾克隆 omarchy.menu，会导致应用列表为空。检测到受本项目
@@ -135,6 +136,12 @@ if [[ ! -e $STATE_DIR/install.version ]]; then
     : >"$BACKUP_DIR/menu-was-absent"
   fi
   [[ -f $SHELL_FILE ]] && cp -a "$SHELL_FILE" "$BACKUP_DIR/shell.json"
+  # 绑定块是追加写入的，卸载靠标记剥离；留下原始副本以便标记被破坏时回滚。
+  if [[ -f $BINDINGS_FILE ]]; then
+    cp -a "$BINDINGS_FILE" "$BACKUP_DIR/bindings.lua"
+  else
+    : >"$BACKUP_DIR/bindings-was-absent"
+  fi
   [[ -f $SYNC_TARGET ]] && cp -a "$SYNC_TARGET" "$BACKUP_DIR/omarchy-zh-sync"
   [[ -f $KEYBINDINGS_TARGET ]] && cp -a "$KEYBINDINGS_TARGET" "$BACKUP_DIR/omarchy-menu-keybindings-zh"
   [[ -f $HOOK_TARGET ]] && cp -a "$HOOK_TARGET" "$BACKUP_DIR/omarchy-zh-post-update"

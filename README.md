@@ -64,6 +64,7 @@ Kimi 配置文件位于 `~/.config/omarchy/agents/kimi.json`：
 - AI 助手状态栏新增 Grok、Kimi，用量限额展示和随主题切换的浅色/深色图标
 - 修复新版 Codex CLI 不再接受旧 `untrusted` 审批策略时导致的 `initialize` 错误
 - 音频、蓝牙、网络、显示器、电源和天气
+- 程序坞右键菜单、Tailscale 连接面板、Dropbox 同步列表和世界时钟界面
 - 日期、月份、星期及日历
 - 天气使用摄氏度，风速使用 `km/h`，地名保持数据源原文
 - 提醒、通知历史和 Omarchy 动态通知
@@ -91,7 +92,7 @@ Kimi 配置文件位于 `~/.config/omarchy/agents/kimi.json`：
 
 ```text
 请帮我在当前这台 Omarchy 4 系统上安装这个简体中文本地化项目：
-https://github.com/QueedWen/omarchy-zh-cn
+https://github.com/Moody-Sin/omarchy-zh-cn
 
 要求：
 1. 先阅读仓库的 README.md 和 install.sh，并检查当前系统、Omarchy 版本及依赖是否兼容。
@@ -106,7 +107,7 @@ https://github.com/QueedWen/omarchy-zh-cn
 ### 手动安装
 
 ```bash
-git clone https://github.com/QueedWen/omarchy-zh-cn.git
+git clone https://github.com/Moody-Sin/omarchy-zh-cn.git
 cd omarchy-zh-cn
 ./install.sh --dry-run
 ./install.sh
@@ -115,7 +116,7 @@ cd omarchy-zh-cn
 安装器会：
 
 1. 检查 Omarchy 版本和依赖。
-2. 使用官方 `omarchy plugin clone` 创建 21 个用户插件克隆。
+2. 使用官方 `omarchy plugin clone` 创建 25 个用户插件克隆。
 3. 安装本地化同步器并生成中文插件。
 4. 为 Agents 插件安装 Codex/Grok/Kimi 用量收集扩展及主题图标。
 5. 将天气单位设为公制。

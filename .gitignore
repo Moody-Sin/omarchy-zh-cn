@@ -2,3 +2,12 @@
 *.swp
 *~
 .DS_Store
+# Python 用量收集器与单元测试产生的缓存。
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+# 本地同步或调试生成的临时产物。
+.zh-sync.*/
+*.zh-new-*

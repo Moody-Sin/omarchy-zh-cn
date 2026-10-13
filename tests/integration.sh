@@ -4,8 +4,20 @@ set -euo pipefail
 
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 
-if [[ ! -d /usr/share/omarchy/shell || ! -x /usr/share/omarchy/bin/omarchy-menu-keybindings ]]; then
-  echo "非 Omarchy 环境，跳过集成检查。"
+# Omarchy may run from a dev checkout instead of the packaged install, so the
+# same resolution order as the syncer is used here.
+omarchy_path=${OMARCHY_PATH:-}
+if [[ -z $omarchy_path ]] && command -v omarchy >/dev/null 2>&1; then
+  resolved=$(
+    cd -- "$(dirname -- "$(command -v omarchy)")/.." 2>/dev/null && pwd
+  ) || resolved=
+  [[ -n ${resolved:-} && -d $resolved/shell/plugins ]] && omarchy_path=$resolved
+fi
+omarchy_path=${omarchy_path:-/usr/share/omarchy}
+
+if [[ ! -d $omarchy_path/shell || ! -x $omarchy_path/bin/omarchy-menu-keybindings ]]; then
+  echo "非 Omarchy 环境（找不到 $omarchy_path/shell 或 omarchy-menu-keybindings），集成检查未执行。"
+  echo "CI 上这会显示为通过但没有真正校验任何内容；请在 Omarchy 4 机器上运行 ./tests/smoke.sh。"
   exit 0
 fi
 
@@ -24,7 +36,7 @@ HOME="$sandbox_home" USER=testuser \
 
 plugin_root="$sandbox_home/.config/omarchy/plugins"
 plugin_count=$(find "$plugin_root" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l)
-[[ $plugin_count -eq 21 ]] || {
+[[ $plugin_count -eq 25 ]] || {
   echo "生成的插件数量不正确：$plugin_count" >&2
   exit 1
 }
@@ -108,6 +120,37 @@ test -f "$plugin_root/testuser.agents/assets/grok.svg"
 test -f "$plugin_root/testuser.agents/assets/grok-light.svg"
 test -f "$plugin_root/testuser.agents/assets/kimi.svg"
 test -f "$plugin_root/testuser.agents/assets/kimi-light.svg"
+# 状态指示器此前有两条遗漏的设置项标签。
+jq -e '
+  [.barWidget.schema[0].options[] | select(.label == "免密码 sudo")] | length == 1
+' "$plugin_root/testuser.indicators/manifest.json" >/dev/null
+jq -e '
+  [.barWidget.schema[0].options[] | select(.label == "远程会话")] | length == 1
+' "$plugin_root/testuser.indicators/manifest.json" >/dev/null
+# 通知文案的补齐与修正：语音输入提示语上游改过，旧的 F9 版本已失效。
+node - "$plugin_root/testuser.notifications/components/NotificationLocalization.js" <<'NODE'
+const { translate } = require(process.argv[2])
+const cases = {
+  "Animations enabled": "动画已启用",
+  "Background Intros": "背景动画",
+  "Enabled": "已启用",
+  "Herdr theme sync disabled": "Herdr 主题同步已禁用",
+  "Theme not applied everywhere": "主题未完全应用",
+  "Superwhisper Dictation Ready": "Superwhisper 语音输入已就绪",
+  "Hold Right Alt or F9 to dictate (or toggle with Super + Ctrl + X).": "按住右 Alt 或 F9 开始听写（或按 Super + Ctrl + X 切换）。",
+  "Could not complete reboot. Please try again.": "无法完成 reboot，请重试。",
+  "Recording without microphone audio": "未录制 microphone 音频",
+  "Battery is down to 15%": "电池电量已降至 15%"
+}
+for (const [input, expected] of Object.entries(cases)) {
+  const actual = translate(input, "omarchy-action")
+  if (actual !== expected) throw new Error(`通知未汉化：${input} -> ${actual}`)
+}
+// 非 Omarchy 发出的通知不翻译。
+if (translate("Animations enabled", "other-app") !== "Animations enabled") {
+  throw new Error("非 omarchy-action 的通知被误译")
+}
+NODE
 rg -Fq ' · 当前' "$plugin_root/testuser.monitor/Panel.qml"
 for speed_plugin in speedtest disk-speedtest; do
   rg -Fq 'text: "再次测试"' "$plugin_root/testuser.$speed_plugin/SpeedTestOverlay.qml"
@@ -116,6 +159,34 @@ rg -Fq '无法获取测速节点' "$plugin_root/testuser.speedtest/Panel.qml"
 rg -Fq '测速未完成' "$plugin_root/testuser.disk-speedtest/Panel.qml"
 rg -Fq 'function localizedCommandError' "$plugin_root/testuser.wifiqr/Panel.qml"
 rg -Fq '没有正在使用的无线网络连接' "$plugin_root/testuser.wifiqr/Panel.qml"
+# 新增克隆的四个插件：程序坞、Tailscale、Dropbox、世界时钟。
+rg -Fq 'text: "自动隐藏"' "$plugin_root/testuser.dock/DockWindow.qml"
+rg -Fq '确定要卸载 ' "$plugin_root/testuser.dock/AppGrid.qml"
+# Agents 面板的账户与用量文案此前整块遗漏，这里做回归断言。
+rg -Fq 'text: "做点有意思的东西"' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq 'text: "需要登录"' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq 'text: "余额"' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq 'text: "使用中"' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq 'text: "用量不可用"' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '重新登录 " + (section.provider' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq 'text: "指纹读取器不可用"' "$plugin_root/testuser.lock/LockView.qml"
+rg -Fq 'text: "打开强制门户"' "$plugin_root/testuser.network/Panel.qml"
+rg -Fq '确定要删除 ' "$plugin_root/testuser.image-picker/ImagePicker.qml"
+rg -Fq 'text: "连接"' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq 'text: "出口节点"' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq 'text: "设备"' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq 'text: "最近的文件"' "$plugin_root/testuser.dropbox/Panel.qml"
+rg -Fq ': "同步已暂停"' "$plugin_root/testuser.dropbox/Panel.qml"
+rg -Fq 'text: "世界"' "$plugin_root/testuser.elsewhen/HeroTitle.qml"
+rg -Fq 'text: "时钟"' "$plugin_root/testuser.elsewhen/HeroTitle.qml"
+rg -Fq 'placeholderText: "搜索城市' "$plugin_root/testuser.elsewhen/CitySearch.qml"
+rg -Fq 'buttonText: "+  添加城市"' "$plugin_root/testuser.elsewhen/CitySearch.qml"
+rg -Fq 'buttonText: "跳转到城市"' "$plugin_root/testuser.elsewhen/Globe.qml"
+# 城市名与品牌名保持原文，不能被汉化。
+rg -Fq 'label: "Tokyo"' "$plugin_root/testuser.elsewhen/Model.js"
+rg -Fq 'title: "Dropbox"' "$plugin_root/testuser.dropbox/Panel.qml"
+# 全球问候语是功能数据（按各地语言显示），必须保留原文。
+rg -Fq 'text: "Good morning"' "$plugin_root/testuser.elsewhen/Greetings.js"
 # 协议值保持英文、仅展示汉化：DNS 服务商、W 快捷键、音频类型判断。
 rg -Fq 'dnsProviders: ["DHCP", "Cloudflare", "Google", "Custom"]' "$plugin_root/testuser.network/Panel.qml"
 rg -Fq 'if (provider === "Custom")' "$plugin_root/testuser.network/Panel.qml"
@@ -165,7 +236,7 @@ update_helpers=(
   omarchy-update-system-pkgs-when-conflicted omarchy-migrate
   omarchy-update-aur-pkgs omarchy-update-mise omarchy-update-orphan-pkgs
   omarchy-update-restart omarchy-update-dev omarchy-update-stay-awake
-  omarchy-update-analyze-logs omarchy-hook omarchy-system-reboot
+  omarchy-update-analyze-logs omarchy-hook
   omarchy-restart-shell
 )
 for helper in "${update_helpers[@]}"; do
@@ -185,7 +256,15 @@ rg -Fq '正在运行迁移' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarch
 rg -Fq '更新 mise 管理的工具' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-mise"
 rg -Fq '重启前请检查日志' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-analyze-logs"
 rg -Fq '钩子执行失败：' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-hook"
-rg -Fq '正在重启' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-system-reboot"
+# Upstream merged logout/reboot/shutdown into one `omarchy system` command and
+# deleted the three standalone scripts, so accept either shape.
+session_bin="$sandbox_home/.local/share/omarchy-zh-cn/bin"
+if [[ -x $session_bin/omarchy-system ]]; then
+  rg -Fq '正在重启' "$session_bin/omarchy-system"
+  rg -Fq '正在关机' "$session_bin/omarchy-system"
+else
+  rg -Fq '正在重启' "$session_bin/omarchy-system-reboot"
+fi
 rg -Fq 'Omarchy Shell 重启后未能就绪' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-restart-shell"
 rg -Fq -- '--affirmative "是" --negative "否" --no-show-help' \
   "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-restart"
