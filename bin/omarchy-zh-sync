@@ -101,15 +101,16 @@ const zh = {
   "Turn Bluetooth on to scan": "打开蓝牙以扫描设备", "Forgetting…": "正在忽略…",
   "Disconnecting…": "正在断开…", "Connecting…": "正在连接…", "Connecting...": "正在连接…",
   "Scanning for devices…": "正在扫描设备…", "Device": "设备",
-  "Herding headsets": "正在搜寻耳机", "Pairing mysteries": "正在探寻配对谜团",
-  "Polishing packets": "正在校准数据包", "Streaming vikings": "正在扫描蓝牙设备",
-  "Summoning speakers": "正在寻找扬声器", "Taming radios": "正在调试无线电",
-  "Untangling wires": "正在整理无线连接", "Wrangling codecs": "正在协商编解码器",
+  "Herding headsets": "正在召唤耳机", "Pairing mysteries": "正在探寻配对谜团",
+  "Polishing packets": "正在打磨数据包", "Streaming vikings": "正在联络维京海盗（蓝牙）",
+  "Summoning speakers": "正在召唤扬声器", "Taming radios": "正在驯服无线电",
+  "Untangling wires": "正在解开虚拟线缆", "Wrangling codecs": "正在调教编解码器",
 
   "Back to today": "返回今天", "BORN": "出生年份", "year": "年份", "LIVE TO": "预计寿命",
   "LIFE": "人生", "Memento Mori": "珍惜此刻", "W": "周", "Clock": "日期与时间",
   "Start weeks on ": "将周起始日设为 ",
   "Previous month": "上个月", "Next month": "下个月",
+  "Right-click to toggle format": "右键点击切换时间格式",
 
   "Display": "显示器", "BRIGHTNESS": "亮度", "FIXED BRIGHTNESS": "固定亮度",
   "TEXT SIZE": "文字大小", "SCALE": "缩放", "DISPLAYS": "显示器",
@@ -315,9 +316,16 @@ const zh = {
   "Add a city": "添加城市",
   "+  Add a city": "+  添加城市",
   "Files": "文件",
-  // 状态指示器选项：上游只给了英文标签，这里补齐。
+  // 状态指示器选项与顶栏微件文案：上游只给了英文标签，这里补齐。
   "Passwordless sudo": "免密码 sudo",
   "Warning while passwordless root access is enabled": "启用免密码 root 权限时发出警告",
+  "Disable Passwordless Sudo": "禁用免密码 sudo",
+  "Passwordless Sudo": "免密码 sudo",
+  "Could not disable passwordless sudo": "无法禁用免密码 sudo",
+  "Check the sudo configuration and try again.": "请检查 sudo 配置并重试。",
+  "Microphone muted": "麦克风已静音",
+  "Microphone in use": "麦克风正在使用",
+  "Microphone live": "麦克风已开启",
   "Remote session": "远程会话",
   "Warning while someone is connected through gliff": "有人通过 gliff 连接时发出警告",
   // Agents 面板的账户与用量界面文案。
@@ -326,6 +334,9 @@ const zh = {
   "Start the default agent": "启动默认 AI 助手",
   "Back to the limits": "返回额度",
   "Add a subscription": "添加订阅",
+  "Add an account": "添加账户",
+  "Subscriptions": "订阅与额度",
+  "The sign-in didn't finish.": "登录未完成。",
   "Autoswitch": "自动切换",
   "Autoswitch ⏎": "自动切换 ⏎",
   "Use": "使用此账户",
@@ -346,7 +357,20 @@ const zh = {
   // 锁屏与网络面板补充。
   "Fingerprint reader unavailable": "指纹读取器不可用",
   "Open Captive Portal": "打开强制门户",
-  "Sign in or accept this network’s terms to access the internet.": "请登录或接受此网络的条款以访问互联网。"
+  "Sign in or accept this network’s terms to access the internet.": "请登录或接受此网络的条款以访问互联网。",
+  // Tailscale 与 Dropbox 操作及错误提示补充。
+  "Authorizing Tailscale operator...": "正在授权 Tailscale 操作员…",
+  "Tailscale login link not available yet": "暂未获取到 Tailscale 登录链接",
+  "Authorize Tailscale operator to show connections": "请授权 Tailscale 操作员以显示连接",
+  "Could not list Tailscale connections": "无法列出 Tailscale 连接",
+  "Tailscale authorization failed": "Tailscale 授权失败",
+  "Starting Dropbox login…": "正在发起 Dropbox 登录…",
+  "Opened Dropbox login": "已打开 Dropbox 登录页面",
+  "Failed to parse Dropbox status": "解析 Dropbox 状态失败",
+  "Failed to read Dropbox status": "读取 Dropbox 状态失败",
+  "Could not read Dropbox status": "无法读取 Dropbox 状态",
+  "Dropbox login failed": "Dropbox 登录失败",
+  "Dropbox command failed": "Dropbox 命令执行失败"
 };
 
 const updateScriptReplacements = {
@@ -526,7 +550,9 @@ const keybindingZh = {
   "Focus on next window": "聚焦下一个窗口", "Focus on previous monitor": "聚焦上一个显示器",
   "Focus on previous window": "聚焦上一个窗口", "Focus on right window": "聚焦右侧窗口",
   "Former workspace": "返回先前工作区", "Full screen": "全屏",
-  "Full width": "占满宽度", "Hardware menu": "硬件菜单",
+  "Full width": "占满宽度", "Google Maps": "Google 地图",
+  "Google Messages": "Google 信息", "Google Photos": "Google 相册",
+  "Hardware menu": "硬件菜单",
   "Herdr keybindings": "Herdr 快捷键", "Invoke last notification": "执行上一条通知的操作",
   "Keybindings": "快捷键", "Keyboard backlight cycle": "切换键盘背光",
   "Keyboard brightness down": "降低键盘背光亮度", "Keyboard brightness up": "提高键盘背光亮度",
@@ -549,6 +575,7 @@ const keybindingZh = {
   "Restore window width": "恢复窗口宽度", "Reveal active window on top": "将活动窗口显示在最上层",
   "Save window width": "保存窗口宽度", "Screenrecording": "屏幕录制", "Screenshot": "截图",
   "Scroll active workspace backward": "向后滚动活动工作区", "Scroll active workspace forward": "向前滚动活动工作区",
+  "Select all": "全选",
   "Set reminder": "设置提醒", "Share": "分享", "Show battery remaining": "显示电池剩余时间",
   "Show reminders": "显示提醒", "Show time": "显示时间", "Shrink window left": "收缩窗口左侧",
   "Shrink window left a little": "小幅收缩窗口左侧", "Shrink window left a lot": "大幅收缩窗口左侧",
@@ -557,6 +584,10 @@ const keybindingZh = {
   "Stop dictation (push-to-talk)": "停止听写（按住说话）", "Swap window down": "向下交换窗口",
   "Swap window to the left": "向左交换窗口", "Swap window to the right": "向右交换窗口",
   "Swap window up": "向上交换窗口", "Switch audio output": "切换音频输出",
+  "Switch input language": "切换输入语言", "Switch input language back": "反向切换输入语言",
+  "Direct input for the terminal prefix": "直接输入终端前缀",
+  "Cycle workspace layout": "轮换工作区布局", "Cycle workspace layout back": "反向轮换工作区布局",
+  "Minimize window to the dock": "将窗口最小化到程序坞",
   "Switch media source": "切换媒体来源", "System menu": "系统菜单", "Terminal": "终端",
   "Theme menu": "主题菜单", "Tiled full screen": "平铺全屏", "Tmux keybindings": "Tmux 快捷键",
   "Toggle dictation": "切换语音输入", "Toggle laptop display": "切换笔记本显示器",
@@ -566,11 +597,13 @@ const keybindingZh = {
   "Toggle top bar": "切换顶栏", "Toggle touchpad": "切换触控板", "Toggle weather": "切换天气",
   "Toggle window floating/tiling": "切换窗口浮动/平铺", "Toggle window gaps": "切换窗口间距",
   "Toggle window grouping": "切换窗口分组", "Toggle window split": "切换窗口分割方向",
-  "Toggle window transparency": "切换窗口透明度", "Toggle workspace layout": "切换工作区布局",
+  "Toggle window transparency": "切换窗口透明度", "Toggle transparency on a window": "切换窗口透明度",
+  "Toggle workspace layout": "切换工作区布局",
   "Transcode": "转码", "Universal copy": "通用复制", "Universal cut": "通用剪切",
   "Universal paste": "通用粘贴", "Volume down": "降低音量", "Volume down precise": "小幅降低音量",
-  "Volume up": "提高音量", "Volume up precise": "小幅提高音量", "X Post": "发布 X 帖子",
-  "Zoom in": "放大"
+  "Volume up": "提高音量", "Volume up precise": "小幅提高音量", "World clock": "世界时钟",
+  "X Post": "发布 X 帖子",
+  "Zoom in": "放大", "Zoom in (JIS + key)": "放大（JIS + 键）"
 };
 
 // Render-time translations for notifications emitted by Omarchy's packaged
@@ -1048,6 +1081,30 @@ const menuZh = {
   "setup.security.passwordless-sudo": {
     "label": "免密码管理权限"
   },
+  "setup.security.ssh-agent": {
+    "label": "SSH 代理"
+  },
+  "setup.security.fido2": {
+    "label": "FIDO2 安全密钥"
+  },
+  "remove.security.fido2": {
+    "label": "FIDO2 安全密钥"
+  },
+  "learn.tmux-keybindings": {
+    "label": "Tmux 快捷键"
+  },
+  "learn.herdr-keybindings": {
+    "label": "Herdr 快捷键"
+  },
+  "remove.ai.chatgpt": {
+    "label": "ChatGPT 桌面版"
+  },
+  "remove.ai.claude": {
+    "label": "Claude 桌面版"
+  },
+  "remove.ai.grok-bot": {
+    "label": "Grok 机器人"
+  },
   "setup.security.sudoless-docker": {
     "label": "免 sudo 运行 Docker"
   },
@@ -1378,6 +1435,10 @@ const notificationLocalizationSource = String.raw`function translate(value, appN
     "New $name sessions now use $label": "新的 $name 会话现在使用 $label",
     "Recording without $1 audio": "未录制 $1 音频",
     "The $1 audio could not be added to this recording.": "无法将 $1 音频加入此次录制。",
+    "Could not disable passwordless sudo": "无法禁用免密码 sudo",
+    "Check the sudo configuration and try again.": "请检查 sudo 配置并重试。",
+    "FIDO2 authfile needs attention": "FIDO2 认证文件需要处理",
+    "Taildrop transfer failed": "Taildrop 传输失败",
     "Connecting…": "正在连接…",
     "Disconnecting…": "正在断开…",
     "Forgetting…": "正在忽略…"
@@ -1469,7 +1530,7 @@ ${assignments}
 
     number = action
     if (number ~ /^Bar panel [0-9]+$/) {
-      sub(/^Bar panel /, "", number); return "状态栏面板 " number
+      sub(/^Bar panel /, "", number); return "顶栏面板 " number
     }
     if (number ~ /^Move window silently to workspace [0-9]+$/) {
       sub(/^Move window silently to workspace /, "", number); return "将窗口静默移到工作区 " number
@@ -1483,6 +1544,12 @@ ${assignments}
     if (number ~ /^Switch to group window [0-9]+$/) {
       sub(/^Switch to group window /, "", number); return "切换到分组窗口 " number
     }
+    if (action == "Bar panel") return "顶栏面板"
+    if (action == "Move window silently to workspace") return "将窗口静默移到工作区"
+    if (action == "Move window to workspace") return "将窗口移到工作区"
+    if (action == "Switch to workspace") return "切换到工作区"
+    if (action == "Switch to group window") return "切换到分组窗口"
+    if (action == "Apps") return "应用"
     if (action == "Move window to group on bottom") return "将窗口移到下方分组"
     if (action == "Move window to group on left") return "将窗口移到左侧分组"
     if (action == "Move window to group on right") return "将窗口移到右侧分组"
@@ -1758,6 +1825,26 @@ function rebuildPlugin(catalogEntry) {
       if (!/\.(qml|js|json|jsonc)$/.test(file)) return;
       const before = fs.readFileSync(file, "utf8");
       let after = translateText(before);
+      if (sourceId === "omarchy.indicators" && path.basename(file) === "RemoteSession.qml") {
+        after = after.replace(
+          'activeTooltipText: peers.length > 0 ? "Remote session from " + peers.join(", ") : "远程会话"',
+          'activeTooltipText: peers.length > 0 ? "来自 " + peers.join(", ") + " 的远程会话" : "远程会话"'
+        );
+      }
+      if (sourceId === "omarchy.dropbox" && path.basename(file) === "Model.js") {
+        after = after
+          .replace(
+            'return formatBytes(usedBytes) + " of " + formatBytes(quotaBytes)',
+            'return "已用 " + formatBytes(usedBytes) + " / 共 " + formatBytes(quotaBytes)'
+          )
+          .replace('if (diff < 60) return "Just now"', 'if (diff < 60) return "刚刚"')
+          .replace('if (minutes < 60) return minutes + "m ago"', 'if (minutes < 60) return minutes + " 分钟前"')
+          .replace('if (hours < 24) return hours + "h ago"', 'if (hours < 24) return hours + " 小时前"')
+          .replace('if (days < 30) return days + "d ago"', 'if (days < 30) return days + " 天前"')
+          .replace('if (months < 12) return months + "mo ago"', 'if (months < 12) return months + " 个月前"')
+          .replace('return Math.floor(days / 365) + "y ago"', 'return Math.floor(days / 365) + " 年前"')
+          .replace('if (!isFinite(ts) || ts <= 0) return "Unknown time"', 'if (!isFinite(ts) || ts <= 0) return "未知时间"');
+      }
       if (sourceId === "omarchy.indicators" && path.basename(file) === "Reminder.qml") {
         after = after.replace(
           'tooltip = String(data.tooltip || "")',
@@ -1871,6 +1958,78 @@ function rebuildPlugin(catalogEntry) {
           .replace(
             'lines.push(compact.scoped[i].title + ": " + Math.round(compact.scoped[i].percent * 100) + "% of its "\n            + String(compact.window ? compact.window.title : "").toLowerCase() + " allowance")',
             'lines.push(compact.scoped[i].title + ": 占其 " + String(compact.window ? compact.window.title : "") + " 额度的 " + Math.round(compact.scoped[i].percent * 100) + "%")'
+          )
+          .replace(
+            ': "Add " + (/^[AEIOU]/.test(addProviderName(addProvider)) ? "an " : "a ") + addProviderName(addProvider) + " account"',
+            ': "添加 " + addProviderName(addProvider) + " 账户"'
+          )
+          .replace(
+            'parts.push(account.resetCredits.available + " free reset" + (Number(account.resetCredits.available) === 1 ? "" : "s"))',
+            'parts.push(account.resetCredits.available + " 次免费重置")'
+          )
+          .replace(
+            'var text = count + " free reset" + (count === 1 ? "" : "s")',
+            'var text = count + " 次免费重置"'
+          )
+          .replace(
+            'if (isFinite(expires) && expires > nowMs) text += " · next expires in " + formatDuration(expires - nowMs)',
+            'if (isFinite(expires) && expires > nowMs) text += " · 下次过期倒计时：" + formatDuration(expires - nowMs)'
+          )
+          .replace(
+            'var text = formatMoney(b.spent, b.currency) + " spent of " + formatMoney(b.funded, b.currency) + " funded"',
+            'var text = "已消耗 " + formatMoney(b.spent, b.currency) + " / 已注入 " + formatMoney(b.funded, b.currency)'
+          )
+          .replace(
+            'if (b.estimated) text += " · estimated"',
+            'if (b.estimated) text += " · 预估"'
+          )
+          .replace(
+            'if (week > 0) phrases.push(usage.formatTokenCount(week) + " tokens this week")',
+            'if (week > 0) phrases.push("本周 " + usage.formatTokenCount(week) + " 词元")'
+          )
+          .replace(
+            'if (today > 0) phrases.push(usage.formatTokenCount(today) + " tokens today")',
+            'if (today > 0) phrases.push("今日 " + usage.formatTokenCount(today) + " 词元")'
+          )
+          .replace(
+            'if (topModel !== "" && byModel[topModel] > 0) phrases.push("Mostly " + topModel)',
+            'if (topModel !== "" && byModel[topModel] > 0) phrases.push("主要模型：" + topModel)'
+          )
+          .replace(
+            'if (busiest !== "" && byDay[busiest] > 0) phrases.push("Busiest day: " + dayName(busiest))',
+            'if (busiest !== "" && byDay[busiest] > 0) phrases.push("用量最高的一天：" + dayName(busiest))'
+          )
+          .replace(
+            'return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][parsed.getDay()]',
+            'return ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][parsed.getDay()]'
+          )
+          .replace(
+            'if (prompts > 0) phrases.push(prompts + " prompt" + (prompts === 1 ? "" : "s") + " today")',
+            'if (prompts > 0) phrases.push("今日 " + prompts + " 次提问")'
+          )
+          .replace(
+            'if (sessions > 0) phrases.push(sessions + " session" + (sessions === 1 ? "" : "s") + " today")',
+            'if (sessions > 0) phrases.push("今日 " + sessions + " 次会话")'
+          )
+          .replace(
+            'return "合并来源：" + count + " device" + (count === 1 ? "" : "s")',
+            'return "已合并来自 " + count + " 台设备的数据"'
+          )
+          .replace(
+            'text: section.provider ? String(section.provider.authHelpText || section.provider.usageStatusText || "") : ""',
+            'text: section.provider ? (({ "Sign-in expired": "登录已过期", "Waiting for auth": "等待身份认证", "Limits paused": "额度统计已暂停" })[String(section.provider.authHelpText || section.provider.usageStatusText || "")] || String(section.provider.authHelpText || section.provider.usageStatusText || "")) : ""'
+          )
+          .replace(
+            'prompt: "Make me a new Omarchy theme. Ask me what look or inspiration I have in mind, then build it following the Omarchy skill\'s theming guide and switch to it."',
+            'prompt: "帮我制作一个新的 Omarchy 主题。先询问我想要什么视觉风格或灵感，然后根据 Omarchy 技能的主题指南进行构建并应用切换。"'
+          )
+          .replace(
+            'prompt: "Make me a new Omarchy shell plugin. Ask me what I\'d like it to do, then build it following the Omarchy skill\'s plugin guide and enable it."',
+            'prompt: "帮我开发一个新的 Omarchy 桌面插件。先问我想实现什么功能，然后按照插件开发指南完成编码并启用它。"'
+          )
+          .replace(
+            'prompt: "Make me a new app for my Omarchy desktop. Ask me what it should do, then build it following the omarchy-app skill and install it so it shows up in the app launcher."',
+            'prompt: "帮我为 Omarchy 桌面编写一个新原生应用。询问我具体的功能需求，然后按照 omarchy-app 技能进行构建，并安装以便在应用启动器中显示。"'
           );
       }
       if (sourceId === "omarchy.weather" && path.basename(file) === "Panel.qml") {

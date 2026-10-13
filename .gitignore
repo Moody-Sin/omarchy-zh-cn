@@ -11,3 +11,8 @@ venv/
 # 本地同步或调试生成的临时产物。
 .zh-sync.*/
 *.zh-new-*
+
+# 本地开发环境配置
+.mise.toml
+.vscode/
+

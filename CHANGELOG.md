@@ -2,6 +2,34 @@
 
 本项目遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 0.4.0 - 2026-10-14
+
+### 修复与补全
+
+- **顶栏指示器与微件漏译**：
+  - 补齐免密码 Sudo 指示器提示与通知：`Disable Passwordless Sudo`（禁用免密码 sudo）、`Passwordless Sudo`（免密码 sudo）、`Could not disable passwordless sudo`（无法禁用免密码 sudo）、`Check the sudo configuration and try again.`（请检查 sudo 配置并重试。）。
+  - 补齐麦克风状态提示：`Microphone muted`（麦克风已静音）、`Microphone in use`（麦克风正在使用）、`Microphone live`（麦克风已开启）。
+  - 修复远程会话指示器动态拼接漏译：将 `Remote session from ...` 汉化为 `来自 ... 的远程会话`。
+  - 补齐时钟微件右键提示：`Right-click to toggle format`（右键点击切换时间格式）。
+- **AI 助手（`omarchy.agents`）面板全量动态语法与文案修复**：
+  - 修复状态展示：`Sign-in expired`（登录已过期）、`Waiting for auth`（等待身份认证）、`Limits paused`（额度统计已暂停）、`The sign-in didn't finish.`（登录未完成。）、`Add an account`（添加账户）、`Subscriptions`（订阅与额度）。
+  - 修复动态额度与时长拼接缺陷：将 `Add an ${provider} account` 汉化为 `添加 ${provider} 账户`；将 `free reset(s)` 汉化为 `次免费重置`；将 `next expires in` 汉化为 `下次过期倒计时：`；将 `spent of ... funded` 汉化为 `已消耗 ... / 已注入 ...`；将 `estimated` 汉化为 `预估`；将 `tokens this week/today` 汉化为 `本周/今日 ... 词元`；将 `Mostly ...` 汉化为 `主要模型：...`；将 `Busiest day: ...` 汉化为 `用量最高的一天：...` 并同步将星期转换为中文；将 `prompts/sessions today` 汉化为 `今日 ... 次提问/会话`；将 `Merged from ... devices` 汉化为 `已合并来自 ... 台设备的数据`。
+  - 本地化快速启动卡片（Starter Prompts）：将默认英文主题、插件与应用开发 Prompt 替换为地道、优质的中文提示词。
+- **Dropbox 与 Tailscale 插件操作提示补齐**：
+  - 修复 Dropbox 容量展示拼接：`used of quota` 规范为 `已用 ... / 共 ...`。
+  - 补齐 Dropbox 相对时间格式化（`刚刚`、`分钟前`、`小时前`、`天前`、`个月前`、`年前`、`未知时间`）。
+  - 补齐 Dropbox 与 Tailscale 操作状态与错误弹窗（操作员授权、节点列表拉取失败、登录失败、命令执行失败等）。
+- **快捷键（`keybindings`）覆盖与术语统一**：
+  - 补齐 18 个上游原生快捷键缺失动作汉化：`Select all`（全选）、`Switch input language (back)`（切换/反向切换输入语言）、`Cycle workspace layout (back)`（轮换/反向轮换工作区布局）、`Direct input for the terminal prefix`（直接输入终端前缀）、`Minimize window to the dock`（将窗口最小化到程序坞）、`Toggle transparency on a window`（切换窗口透明度，修复上游命名不匹配导致的漏译）、`World clock`（世界时钟）、`Apps`（应用）、`Zoom in (JIS + key)`（放大（JIS + 键））、Google 系列应用等。
+  - 统一动态顶栏术语：将 awk 动态替换中的 `状态栏面板` 修正为规范的 `顶栏面板`。
+- **菜单（Menu）对齐与规范化**：
+  - 统一安装与卸载菜单项名称对齐：`remove.ai.chatgpt`（ChatGPT 桌面版）、`remove.ai.claude`（Claude 桌面版）、`remove.ai.grok-bot`（Grok 机器人）。
+  - 规范学习菜单项名称：`learn.tmux-keybindings`（Tmux 快捷键）、`learn.herdr-keybindings`（Herdr 快捷键）。
+  - 统一安全密钥与代理命名：`setup.security.ssh-agent` 对齐为 `SSH 代理`；FIDO2 相关菜单项规范为 `FIDO2 安全密钥`。
+- **通知中心与极客文案润色**：
+  - 补充 `NotificationLocalization.js` 缺失通知精确匹配（免密码 sudo 失败、FIDO2 认证处理、Taildrop 传输失败等）。
+  - 润色蓝牙状态趣味文案（`正在召唤耳机`、`正在打磨数据包`、`正在联络维京海盗（蓝牙）`、`正在召唤扬声器`、`正在驯服无线电`、`正在解开虚拟线缆`、`正在调教编解码器`）。
+
 ## 0.3.0 - 2026-10-13
 
 ### 修复

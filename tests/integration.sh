@@ -76,6 +76,14 @@ if (menu["remove.ai"].title !== "卸载") throw new Error("AI 卸载标题未汉
 if (menu["install.service.1password"].label !== "1Password") throw new Error("1Password 占位符未修正")
 if (menu["setup.security.sudoless-docker"].label !== "免 sudo 运行 Docker") throw new Error("免 sudo Docker 未汉化")
 if (menu["remove.security.sudoless-docker"].label !== "免 sudo 运行 Docker") throw new Error("移除免 sudo Docker 未汉化")
+if (menu["setup.security.ssh-agent"].label !== "SSH 代理") throw new Error("SSH 代理设置未对齐")
+if (menu["setup.security.fido2"].label !== "FIDO2 安全密钥") throw new Error("FIDO2 设置未汉化")
+if (menu["remove.security.fido2"].label !== "FIDO2 安全密钥") throw new Error("FIDO2 移除未汉化")
+if (menu["learn.tmux-keybindings"].label !== "Tmux 快捷键") throw new Error("Tmux 快捷键菜单未汉化")
+if (menu["learn.herdr-keybindings"].label !== "Herdr 快捷键") throw new Error("Herdr 快捷键菜单未汉化")
+if (menu["remove.ai.chatgpt"].label !== "ChatGPT 桌面版") throw new Error("ChatGPT 移除未汉化")
+if (menu["remove.ai.claude"].label !== "Claude 桌面版") throw new Error("Claude 移除未汉化")
+if (menu["remove.ai.grok-bot"].label !== "Grok 机器人") throw new Error("Grok 机器人移除未汉化")
 if (menu["learn.keybindings"].action !== home + "/.local/bin/omarchy-menu-keybindings-zh") {
   throw new Error("快捷键入口路径不正确")
 }
@@ -94,11 +102,19 @@ rg -Fq '停止自动切换' "$plugin_root/testuser.agents/Panel.qml"
 rg -Fq '用量数据尚未更新' "$plugin_root/testuser.agents/Panel.qml"
 rg -Fq '已用' "$plugin_root/testuser.agents/Panel.qml"
 rg -Fq '重置倒计时：' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '次免费重置' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '已消耗 ' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '词元' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '主要模型：' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '用量最高的一天：' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '已合并来自 ' "$plugin_root/testuser.agents/Panel.qml"
 
 rg -Fq '登录 Dropbox' "$plugin_root/testuser.dropbox/Panel.qml"
 rg -Fq '未安装 Dropbox CLI' "$plugin_root/testuser.dropbox/Panel.qml"
 rg -Fq '开始身份认证流程' "$plugin_root/testuser.dropbox/Panel.qml"
 rg -Fq '从服务菜单安装 Dropbox' "$plugin_root/testuser.dropbox/Panel.qml"
+rg -Fq '已用 ' "$plugin_root/testuser.dropbox/Model.js"
+rg -Fq '刚刚' "$plugin_root/testuser.dropbox/Model.js"
 
 rg -Fq '开启 Tailscale' "$plugin_root/testuser.tailscale/Panel.qml"
 rg -Fq '关闭 Tailscale' "$plugin_root/testuser.tailscale/Panel.qml"
@@ -107,6 +123,7 @@ rg -Fq 'Tailscale 已断开连接' "$plugin_root/testuser.tailscale/Panel.qml"
 rg -Fq '选择 Mullvad 地区' "$plugin_root/testuser.tailscale/Panel.qml"
 rg -Fq '正在加密网络连接' "$plugin_root/testuser.tailscale/Panel.qml"
 rg -Fq '需要登录' "$plugin_root/testuser.tailscale/Service.qml"
+rg -Fq '正在授权 Tailscale 操作员…' "$plugin_root/testuser.tailscale/Service.qml"
 
 rg -Fq '需要登录网络' "$plugin_root/testuser.network/Panel.qml"
 rg -Fq '网络访问受限' "$plugin_root/testuser.network/Panel.qml"
@@ -118,6 +135,12 @@ rg -Fq '本地当前时间为 ' "$plugin_root/testuser.elsewhen/Panel.qml"
 rg -Fq '将周起始日设为 ' "$plugin_root/testuser.clock/Panel.qml"
 rg -Fq '收缩窗口左侧' "$sandbox_home/.local/bin/omarchy-menu-keybindings-zh"
 rg -Fq '切换顶栏' "$sandbox_home/.local/bin/omarchy-menu-keybindings-zh"
+rg -Fq '全选' "$sandbox_home/.local/bin/omarchy-menu-keybindings-zh"
+rg -Fq '轮换工作区布局' "$sandbox_home/.local/bin/omarchy-menu-keybindings-zh"
+rg -Fq '顶栏面板' "$sandbox_home/.local/bin/omarchy-menu-keybindings-zh"
+
+rg -Fq '禁用免密码 sudo' "$plugin_root/testuser.indicators/indicators/PasswordlessSudo.qml"
+rg -Fq '来自 ' "$plugin_root/testuser.indicators/indicators/RemoteSession.qml"
 
 rg -Fq '"scrolling": "滚动布局"' \
   "$plugin_root/testuser.notifications/components/NotificationLocalization.js"
