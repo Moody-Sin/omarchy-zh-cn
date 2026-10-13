@@ -131,11 +131,13 @@ const zh = {
   "Passphrase": "密码", "Copy to clipboard": "复制到剪贴板", "Custom": "自定义",
   "KNOWN NETWORKS": "已保存的网络", "OTHER NETWORKS": "其他网络", "WI-FI BAND": "无线频段",
   "WI-FI BAND: ": "无线频段：", "Let Wi-Fi pick the band": "自动选择无线频段",
-  "Stay on ": "固定使用", "Timeout": "连接超时", "Passphrase required": "需要输入密码",
+  "Stay on ": "固定使用 ", "Timeout": "连接超时", "Passphrase required": "需要输入密码",
   "Wrong password": "密码错误", "Network lost": "网络连接已断开",
   "Connection failed": "连接失败", "Failed to connect": "无法连接",
   "Turn Wi-Fi off": "关闭无线网络", "Turn Wi-Fi on": "打开无线网络",
   "Hidden": "隐藏网络", "Auto": "自动",
+  "SIGN-IN REQUIRED": "需要登录网络", "LIMITED INTERNET ACCESS": "网络访问受限",
+  "Sign in to this network": "登录此网络", "Limited internet access": "网络访问受限",
   "Timed out connecting": "连接超时", "Timed out disconnecting": "断开连接超时",
   "Timed out forgetting": "忽略网络超时", "Failed": "失败",
   "Bending light": "正在折射光信号", "Counting collisions": "正在监测网络冲突",
@@ -270,6 +272,28 @@ const zh = {
   "Search regions": "搜索地区",
   "Authorize Tailscale operator": "授权 Tailscale 操作员",
   "Allow this user to operate this Tailscale profile": "允许此用户操作该 Tailscale 配置文件",
+  "Turn Tailscale on": "开启 Tailscale",
+  "Turn Tailscale off": "关闭 Tailscale",
+  "Authorize this device": "授权此设备",
+  "Tailscale is disconnected": "Tailscale 已断开连接",
+  "Choose Mullvad region": "选择 Mullvad 地区",
+  "Account": "账户",
+  "Send files": "发送文件",
+  "Encrypting connections": "正在加密网络连接",
+  "Sending secrets": "正在传输加密凭据",
+  "Guarding wires": "正在守护通信链路",
+  "Braiding packets": "正在编织网络数据包",
+  "Polishing tunnels": "正在校准安全隧道",
+  "Hiding routes": "正在隐匿路由轨迹",
+  "Sealing ports": "正在加固网络端口",
+  "Sorting tailnets": "正在整理 Tailnet 节点",
+  "Shuffling keys": "正在轮换加密密钥",
+  "Watching machines": "正在监测互联设备",
+  "Needs login": "需要登录",
+  "Starting Tailscale login…": "正在发起 Tailscale 登录…",
+  "Tailscale command failed": "Tailscale 命令执行失败",
+  "Exit node selection failed": "出口节点选择失败",
+  "Tailscale operator authorized": "Tailscale 操作员已授权",
   // Dropbox：状态栏面板文案。
   "Dropbox status, storage usage, login, and recent synced files in the Omarchy bar.": "在 Omarchy 状态栏中显示 Dropbox 状态、存储用量、登录入口和最近同步的文件。",
   "Log in to Dropbox, view storage usage, and open recent synced files.": "登录 Dropbox、查看存储用量并打开最近同步的文件。",
@@ -278,11 +302,15 @@ const zh = {
   "Stored": "已用容量",
   "Syncing paused": "同步已暂停",
   "Status error": "状态获取失败",
+  "Login to Dropbox": "登录 Dropbox",
+  "Dropbox CLI is not installed": "未安装 Dropbox CLI",
+  "Start the authentication flow": "开始身份认证流程",
+  "Install Dropbox from the service menu": "从服务菜单安装 Dropbox",
   // Elsewhen：世界时钟界面文字。城市数据与多语言问候语是功能内容，保持原样。
   "Elsewhen": "世界时钟",
   "A world clock for the Omarchy shell: the time in several cities at once, with a spinnable globe.": "Omarchy 世界时钟：同时显示多个城市的时间，配有可旋转的地球仪。",
   "A world clock: one row per city, and a globe.": "世界时钟：每个城市一行，并带一个地球仪。",
-  "World": "世界", "Clock": "时钟",
+  "World": "世界", "Clock": "时钟", "World clock": "世界时钟",
   "Jump to a city": "跳转到城市",
   "Add a city": "添加城市",
   "+  Add a city": "+  添加城市",
@@ -296,6 +324,14 @@ const zh = {
   "MAKE SOMETHING COOL": "做点有意思的东西",
   "Sign in to an AI coding subscription, and this panel keeps track of how much of it you have left.": "登录 AI 编程订阅后，此面板会跟踪你的剩余额度。",
   "Start the default agent": "启动默认 AI 助手",
+  "Back to the limits": "返回额度",
+  "Add a subscription": "添加订阅",
+  "Autoswitch": "自动切换",
+  "Autoswitch ⏎": "自动切换 ⏎",
+  "Use": "使用此账户",
+  "Use ⏎": "使用 ⏎",
+  "Stop switching automatically": "停止自动切换",
+  "Usage has not been updated yet.": "用量数据尚未更新",
   "Name this account. It signs in through a private window, so your browser's current account isn't picked up.": "为此账户命名。它通过隐私窗口登录，因此不会使用浏览器当前登录的账户。",
   "Confirm this code in your browser": "请在浏览器中确认此验证码",
   "If the page shows a code instead of finishing, paste it here.": "如果页面显示验证码而没有自动完成，请粘贴到这里。",
@@ -1770,6 +1806,15 @@ function rebuildPlugin(catalogEntry) {
           ['"Loading cities\\u2026"', '"正在加载城市\\u2026"']
         ];
         for (const [from, to] of escaped) after = after.split(from).join(to);
+        if (path.basename(file) === "Panel.qml") {
+          const hereLineSource = 'readonly property string hereLine: "It\'s " + localTime + " here"';
+          if (after.includes(hereLineSource)) {
+            after = after.replace(
+              hereLineSource,
+              'readonly property string hereLine: "本地当前时间为 " + localTime'
+            );
+          }
+        }
       }
       if (sourceId === "omarchy.dock") {
         // 两处确认/提示消息是拼接串，只翻译固定部分，应用名保持原样。
@@ -1788,7 +1833,7 @@ function rebuildPlugin(catalogEntry) {
         }
       }
       if (sourceId === "omarchy.agents" && path.basename(file) === "Panel.qml") {
-        // 两处都是拼接串：翻译固定前缀，保留运行时拼接的动态名称。
+        // 多处拼接串：翻译固定前缀/后缀，保留运行时拼接的动态名称。
         const signInTooltipSource = 'tooltip: "Sign in to " + (section.provider ? section.provider.providerName : "") + " again"';
         if (after.includes(signInTooltipSource)) {
           after = after.replace(
@@ -1803,6 +1848,30 @@ function rebuildPlugin(catalogEntry) {
             'text: "在新的 " + tile.title + " 中启动默认 AI 助手"'
           );
         }
+        const autoSwitchThresholdSource = ': "Switch here automatically at " + root.switchThreshold(head.owner) + "%"';
+        if (after.includes(autoSwitchThresholdSource)) {
+          after = after.replace(
+            autoSwitchThresholdSource,
+            ': "达到 " + root.switchThreshold(head.owner) + "% 时自动切换到此账户"'
+          );
+        }
+        after = after
+          .replace(
+            'lines.push(compact.window.title + ": " + Math.round(compact.window.percent * 100) + "% used"\n            + (compact.resetMs > 0 ? " · resets in " + root.formatDuration(compact.resetMs) : ""))',
+            'lines.push(compact.window.title + ": " + Math.round(compact.window.percent * 100) + "% 已用"\n            + (compact.resetMs > 0 ? " · 重置倒计时：" + root.formatDuration(compact.resetMs) : ""))'
+          )
+          .replace(
+            'root.nowMs - compact.fetchedAt > 60000\n            ? "Last updated " + root.formatDuration(root.nowMs - compact.fetchedAt) + " ago"',
+            'root.nowMs - compact.fetchedAt > 60000\n            ? "最后更新于 " + root.formatDuration(root.nowMs - compact.fetchedAt) + " 前"'
+          )
+          .replace(
+            ': compact.fetchedAt > 0 ? "Last updated less than a minute ago" : "Last updated time unavailable")',
+            ': compact.fetchedAt > 0 ? "刚刚更新" : "更新时间不可用")'
+          )
+          .replace(
+            'lines.push(compact.scoped[i].title + ": " + Math.round(compact.scoped[i].percent * 100) + "% of its "\n            + String(compact.window ? compact.window.title : "").toLowerCase() + " allowance")',
+            'lines.push(compact.scoped[i].title + ": 占其 " + String(compact.window ? compact.window.title : "") + " 额度的 " + Math.round(compact.scoped[i].percent * 100) + "%")'
+          );
       }
       if (sourceId === "omarchy.weather" && path.basename(file) === "Panel.qml") {
         after = after.replace(

@@ -86,6 +86,35 @@ NODE
 
 rg -Fq '重新登录 ' "$plugin_root/testuser.agents/Panel.qml"
 rg -Fq '在新的' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '返回额度' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '添加订阅' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '自动切换' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '使用此账户' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '停止自动切换' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '用量数据尚未更新' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '已用' "$plugin_root/testuser.agents/Panel.qml"
+rg -Fq '重置倒计时：' "$plugin_root/testuser.agents/Panel.qml"
+
+rg -Fq '登录 Dropbox' "$plugin_root/testuser.dropbox/Panel.qml"
+rg -Fq '未安装 Dropbox CLI' "$plugin_root/testuser.dropbox/Panel.qml"
+rg -Fq '开始身份认证流程' "$plugin_root/testuser.dropbox/Panel.qml"
+rg -Fq '从服务菜单安装 Dropbox' "$plugin_root/testuser.dropbox/Panel.qml"
+
+rg -Fq '开启 Tailscale' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq '关闭 Tailscale' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq '授权此设备' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq 'Tailscale 已断开连接' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq '选择 Mullvad 地区' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq '正在加密网络连接' "$plugin_root/testuser.tailscale/Panel.qml"
+rg -Fq '需要登录' "$plugin_root/testuser.tailscale/Service.qml"
+
+rg -Fq '需要登录网络' "$plugin_root/testuser.network/Panel.qml"
+rg -Fq '网络访问受限' "$plugin_root/testuser.network/Panel.qml"
+rg -Fq '固定使用 ' "$plugin_root/testuser.network/Panel.qml"
+
+rg -Fq 'tooltipText: "世界时钟"' "$plugin_root/testuser.elsewhen/Panel.qml"
+rg -Fq '本地当前时间为 ' "$plugin_root/testuser.elsewhen/Panel.qml"
+
 rg -Fq '将周起始日设为 ' "$plugin_root/testuser.clock/Panel.qml"
 rg -Fq '收缩窗口左侧' "$sandbox_home/.local/bin/omarchy-menu-keybindings-zh"
 rg -Fq '切换顶栏' "$sandbox_home/.local/bin/omarchy-menu-keybindings-zh"

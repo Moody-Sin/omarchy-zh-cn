@@ -7,7 +7,12 @@
 ### 修复
 
 - 修复上游 `install.service.1password` 菜单占位符泄漏问题：上游原生菜单将 1Password 服务标签硬编码为 `1Password`，现已在 `menuZh` 中清洗并显式声明为正确服务名称。
-- 修复 AI 助手 (`omarchy.agents`) 面板两处动态拼接字符串漏译：针对重新登录提示 (`Sign in to ... again`) 与新建任务启动助手提示 (`Start your default agent on a new ...`)，补充 QML 结构化源码替换，彻底消除英文残留。
+- 修复 AI 助手 (`omarchy.agents`) 面板多处漏译与动态拼接：顶栏返回额度与添加订阅提示、多账户自动切换与手动使用按钮、数据未更新状态，以及紧凑用量卡片悬停详情（已用百分比、重置倒计时、最后更新时间、额度占比），彻底消除英文残留。
+- 修复 Dropbox 插件在未安装 CLI 或未登录状态下的英文界面残留（登录入口、未安装 CLI 说明、引导认证与服务菜单安装说明）。
+- 修复 Tailscale 插件开关状态、设备授权、出口节点选择、底层服务通知及 10 条链路扫描极客趣味文案漏译。
+- 修复网络面板大标题中的强制门户与网络受限状态标签（`SIGN-IN REQUIRED`、`LIMITED INTERNET ACCESS`）。
+- 修复无线频段锁定标签拼接黏连问题：将 `Stay on ` 规范为带尾部空格的 `固定使用 `。
+- 修复世界时钟悬停提示与本地时间拼接语法（`It's ... here` 替换为 `本地当前时间为 ...`）。
 - 修复日历面板周起始提示语拼接生硬问题：将 `Start weeks on ` 调整为符合中文习惯的 `将周起始日设为 `。
 - 清理 `NotificationLocalization.js` 中重复定义的 `Voxtype Dictation Ready` 键及多余的 `Theme not applied everywhere` 正则分支。
 
