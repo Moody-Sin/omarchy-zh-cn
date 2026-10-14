@@ -29,6 +29,9 @@
   - 规范学习菜单项名称：`learn.tmux-keybindings`（Tmux 快捷键）、`learn.herdr-keybindings`（Herdr 快捷键）。
   - 统一安全密钥与代理命名：`setup.security.ssh-agent` 对齐为 `SSH 代理`；FIDO2 相关菜单项规范为 `FIDO2 安全密钥`。
 - **面板微件与极客文案润色**：
+  - 补齐 Elsewhen 世界时钟城市条（`CityRow.qml`）删除按钮悬浮提示：`Remove`（移除）。
+  - 补齐 AI 助手面板（`Panel.qml`）授权添加状态：`Starting…`（正在启动…）、`Checking the code…`（正在校验验证码…）。
+  - 补充设置菜单中默认 Agent 的 Cursor CLI 标签：`setup.default.agent.cursor-agent`（Cursor CLI）。
   - 补齐 Elsewhen 世界时钟日照条（`DaylightStrip.qml`）日出与日落标记汉化：`Sunrise`（日出）、`Sunset`（日落）。
 - **通知中心与极客文案润色**：
   - 补充 `NotificationLocalization.js` 缺失通知精确匹配（免密码 sudo 失败、FIDO2 认证处理、Taildrop 传输失败等）。

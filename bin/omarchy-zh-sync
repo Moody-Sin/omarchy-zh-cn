@@ -258,6 +258,7 @@ const zh = {
   "New Window": "新建窗口",
   "Keep in Dock": "保留在程序坞",
   "Remove from Dock": "从程序坞移除",
+  "Remove": "移除",
   "Quit": "退出",
   "Open": "打开",
   "Uninstall": "卸载",
@@ -349,6 +350,8 @@ const zh = {
   "Open the sign-in page again": "重新打开登录页面",
   "Sign-in required": "需要登录",
   "Sign in to this account again": "重新登录此账户",
+  "Starting…": "正在启动…",
+  "Checking the code…": "正在校验验证码…",
   "Balance": "余额",
   "ACTIVE": "使用中",
   "Usage unavailable": "用量不可用",
@@ -1065,6 +1068,9 @@ const menuZh = {
   },
   "setup.default.agent.agy": {
     "label": "Antigravity"
+  },
+  "setup.default.agent.cursor-agent": {
+    "label": "Cursor CLI"
   },
   "setup.default.agent.ori": {
     "label": "Ori"
