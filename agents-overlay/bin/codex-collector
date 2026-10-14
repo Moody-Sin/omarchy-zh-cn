@@ -1,11 +1,24 @@
 #!/usr/bin/python3
 """Run Omarchy's Codex collector with a less brittle RPC timeout."""
 
+import os
 import runpy
+import shutil
 
+
+collector_path = (
+  os.environ.get("OMARCHY_CODEX_COLLECTOR")
+  or (
+    os.path.join(os.environ["OMARCHY_PATH"], "bin", "omarchy-agent-usage-codex")
+    if os.environ.get("OMARCHY_PATH") and os.path.isfile(os.path.join(os.environ["OMARCHY_PATH"], "bin", "omarchy-agent-usage-codex"))
+    else None
+  )
+  or shutil.which("omarchy-agent-usage-codex")
+  or "/usr/bin/omarchy-agent-usage-codex"
+)
 
 collector = runpy.run_path(
-  "/usr/bin/omarchy-agent-usage-codex",
+  collector_path,
   run_name="omarchy_agent_usage_codex_compat",
 )
 

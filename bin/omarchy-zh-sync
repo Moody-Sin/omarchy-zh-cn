@@ -13,6 +13,9 @@ const noRestart = process.argv.includes("--no-restart");
 const adoptExisting = process.argv.includes("--adopt-existing");
 const home = os.homedir();
 const user = process.env.USER || path.basename(home);
+if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(user)) {
+  throw new Error(`用户名无法安全地用于插件 ID：${user}`);
+}
 function resolveOmarchyPath() {
   const candidates = [];
   if (process.env.OMARCHY_PATH) candidates.push(process.env.OMARCHY_PATH);
@@ -296,18 +299,32 @@ const zh = {
   "Tailscale command failed": "Tailscale 命令执行失败",
   "Exit node selection failed": "出口节点选择失败",
   "Tailscale operator authorized": "Tailscale 操作员已授权",
-  // Dropbox：状态栏面板文案。
+  "Not installed": "未安装",
+  "Stopped": "已停止",
+  // Dropbox：状态栏面板文案与趣味加载短语。
   "Dropbox status, storage usage, login, and recent synced files in the Omarchy bar.": "在 Omarchy 状态栏中显示 Dropbox 状态、存储用量、登录入口和最近同步的文件。",
   "Log in to Dropbox, view storage usage, and open recent synced files.": "登录 Dropbox、查看存储用量并打开最近同步的文件。",
   "RECENT FILES": "最近的文件",
   "No synced files found.": "没有找到已同步的文件。",
   "Stored": "已用容量",
   "Syncing paused": "同步已暂停",
+  "Pause syncing": "暂停同步",
+  "Resume syncing": "恢复同步",
   "Status error": "状态获取失败",
   "Login to Dropbox": "登录 Dropbox",
   "Dropbox CLI is not installed": "未安装 Dropbox CLI",
   "Start the authentication flow": "开始身份认证流程",
   "Install Dropbox from the service menu": "从服务菜单安装 Dropbox",
+  "Filing files": "正在归档文件",
+  "Distributing data": "正在分发数据",
+  "Shuffling folders": "正在整理文件夹",
+  "Boxing bytes": "正在打包数据字节",
+  "Sorting stuff": "正在分类内容",
+  "Syncing secrets": "正在同步加密数据",
+  "Packing packets": "正在封装数据包",
+  "Moving memories": "正在迁移文件记忆",
+  "Wrangling revisions": "正在整理历史版本",
+  "Cataloging chaos": "正在归纳杂乱文件",
   // Elsewhen：世界时钟界面文字。城市数据与多语言问候语是功能内容，保持原样。
   "Elsewhen": "世界时钟",
   "A world clock for the Omarchy shell: the time in several cities at once, with a spinnable globe.": "Omarchy 世界时钟：同时显示多个城市的时间，配有可旋转的地球仪。",
@@ -316,6 +333,13 @@ const zh = {
   "Jump to a city": "跳转到城市",
   "Add a city": "添加城市",
   "+  Add a city": "+  添加城市",
+  "Zones (Label|IANA name, comma separated; blank seeds on first run)": "显示时区（标签|IANA时区名，逗号分隔；初次运行留空自动预设）",
+  "24-hour time (unset follows the system)": "24 小时制（未设置则跟随系统）",
+  "Row offsets: home (distance from you) or utc": "时差基准：home（以本机为基准）或 utc（世界标准时间）",
+  "Temperature units (F or C; blank follows the system)": "温度单位（F 华氏度或 C 摄氏度；留空则跟随系统）",
+  "Globe mode (tap the hero globe)": "地球仪显示模式（点击地球仪切换）",
+  "Your city (blank = from the system time zone)": "所在城市（留空则从系统时区获取）",
+  "Drop labels and detail while the globe moves": "旋转地球仪时隐藏标签与细节",
   "Files": "文件",
   // 状态指示器选项与顶栏微件文案：上游只给了英文标签，这里补齐。
   "Passwordless sudo": "免密码 sudo",
@@ -1523,7 +1547,7 @@ const notificationLocalizationSource = String.raw`function translate(value, appN
   if ((match = original.match(/^Recording without (.+) audio$/))) return "未录制 " + match[1] + " 音频"
   if ((match = original.match(/^The (.+) audio could not be added to this recording\.$/))) return "无法将 " + match[1] + " 音频加入此次录制。"
 
-  var localized = original
+  const localized = original
     .replace(/\s*·\s*Temp\s+/g, "  ·  温度 ")
     .replace(/\s*·\s*Wind\s+/g, "  ·  风速 ")
     .replace(/\bMonday\b/g, "星期一").replace(/\bTuesday\b/g, "星期二")
@@ -1532,7 +1556,11 @@ const notificationLocalizationSource = String.raw`function translate(value, appN
     .replace(/\bSunday\b/g, "星期日")
     .replace(/\bJanuary\b/g, "1月").replace(/\bFebruary\b/g, "2月")
     .replace(/\bMarch\b/g, "3月").replace(/\bApril\b/g, "4月")
-    .replace(/\bMay\b/g, "5月").replace(/\bJune\b/g, "6月")
+    // 兼顾 "May 15" 与 "15 May" 两种日期格式，同时不误伤情态动词 May。
+    // 不可改用后行断言 (?<=...) 合并：Quickshell 的 Qt V4 引擎不支持后行断言，
+    // 且失败是静默的（整条正则连同前瞻分支一起失效，反而破坏 "May 15"）。
+    .replace(/(\b\d{1,2}\s+)May\b|\bMay\b(?=\s+\d{1,2}\b)/g, "$15月")
+    .replace(/\bJune\b/g, "6月")
     .replace(/\bJuly\b/g, "7月").replace(/\bAugust\b/g, "8月")
     .replace(/\bSeptember\b/g, "9月").replace(/\bOctober\b/g, "10月")
     .replace(/\bNovember\b/g, "11月").replace(/\bDecember\b/g, "12月")
@@ -1881,6 +1909,9 @@ function rebuildPlugin(catalogEntry) {
           'activeTooltipText: peers.length > 0 ? "来自 " + peers.join(", ") + " 的远程会话" : "远程会话"'
         );
       }
+      if (sourceId === "omarchy.tailscale" && path.basename(file) === "Service.qml") {
+        after = after.replace('backendState === "已停止"', 'backendState === "Stopped"');
+      }
       if (sourceId === "omarchy.dropbox" && path.basename(file) === "Model.js") {
         after = after
           .replace(
@@ -2113,6 +2144,10 @@ function rebuildPlugin(catalogEntry) {
         const sourceSource = 'mediaClass.indexOf("音源")';
         if (!after.includes(sourceSource)) throw new Error("音频插件结构已变化：音源判断");
         after = after.split(sourceSource).join('mediaClass.indexOf("Source")');
+        const micRegexSource = '/\\bMicrophones\\b/g, "麦克风"';
+        if (after.includes(micRegexSource)) {
+          after = after.split(micRegexSource).join('/\\bMicrophones\\b/g, "Microphone"');
+        }
       }
       if (sourceId === "omarchy.clock" && path.basename(file) === "Panel.qml") {
         // 日历 "W" 表头可以汉化，但键盘按键判断必须保持英文。
@@ -2286,7 +2321,9 @@ function syncMenu() {
   if (!priorRootLabel) defaults["root"].label = "开始";
   const header = "// Omarchy 4 简体中文菜单：动作来自当前系统版本，文字由本地汉化保留。\n";
   fs.mkdirSync(path.dirname(menuUser), { recursive: true });
-  fs.writeFileSync(menuUser, header + JSON.stringify(defaults, null, 2) + "\n");
+  const temporary = `${menuUser}.zh-new-${process.pid}`;
+  fs.writeFileSync(temporary, header + JSON.stringify(defaults, null, 2) + "\n");
+  fs.renameSync(temporary, menuUser);
 }
 
 function syncShellSettings() {
@@ -2296,7 +2333,7 @@ function syncShellSettings() {
   const shell = JSON.parse(fs.readFileSync(shellPath, "utf8"));
   for (const section of ["left", "center", "right"]) {
     for (const widget of shell.bar?.layout?.[section] || []) {
-      if (widget.id === `${user}.weather` || widget.id === "omarchy.weather") widget.unit = "metric";
+      if (widget && (widget.id === `${user}.weather` || widget.id === "omarchy.weather")) widget.unit = "metric";
     }
   }
 

@@ -205,7 +205,7 @@ def collect(force: bool) -> dict[str, Any]:
     remaining = cents(config.get("prepaidBalance"))
     balance = ({"remaining": remaining, "funded": 0, "spent": 0,
                 "currency": "USD", "estimated": False}
-               if remaining is not None and remaining > 0 else None)
+               if remaining is not None and remaining >= 0 else None)
     if not limits and balance is None:
       raise ValueError("missing usage limits")
     tier = ""

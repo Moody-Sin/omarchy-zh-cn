@@ -99,17 +99,19 @@ fi
 
 if [[ -f $STATE_DIR/original/shell.json && -f $SHELL_FILE ]]; then
   original_unit=$(jq -r '
-    [.bar.layout[][] | select(.id | endswith(".weather")) | (.unit // "__missing__")][0] // "__missing__"
+    [.bar?.layout?[]?[]? | select((.id // "") | endswith(".weather")) | (.unit // "__missing__")][0] // "__missing__"
   ' "$STATE_DIR/original/shell.json")
   temporary="$SHELL_FILE.zh-new-$$"
   jq --arg unit "$original_unit" '
-    .bar.layout |= with_entries(
-      .value |= map(
-        if (.id | endswith(".weather")) then
-          if $unit == "__missing__" then del(.unit) else .unit = $unit end
-        else . end
+    if (.bar.layout? | type) == "object" then
+      .bar.layout |= with_entries(
+        .value |= map(
+          if (((.id // "") | endswith(".weather"))) then
+            if $unit == "__missing__" then del(.unit) else .unit = $unit end
+          else . end
+        )
       )
-    )
+    else . end
   ' "$SHELL_FILE" >"$temporary"
   mv "$temporary" "$SHELL_FILE"
 fi

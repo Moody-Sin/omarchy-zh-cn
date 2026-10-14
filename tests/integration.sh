@@ -94,6 +94,29 @@ if (menu["update.omarchy"].action !== "omarchy-launch-floating-terminal-with-pre
 }
 NODE
 
+node - "$sandbox_home" <<'NODE'
+const path = require("path");
+const home = process.argv[2];
+const { translate } = require(path.join(home, ".config/omarchy/plugins/testuser.notifications/components/NotificationLocalization.js"));
+// 注意必须传 appName="omarchy-action"：translate 对非 Omarchy 通知原样返回，
+// 漏传会让断言恒真而空转。
+if (translate("May I help you?", "omarchy-action") !== "May I help you?") {
+  console.error("情态动词 May 误伤测试失败：", translate("May I help you?", "omarchy-action"));
+  process.exit(1);
+}
+// 国际日期格式（日在前）与美式日期格式（月在前）都必须汉化。
+for (const [input, expected] of [
+  ["15 May 2026", "15 5月 2026"],
+  ["May 15, 2026", "5月 15, 2026"]
+]) {
+  const actual = translate(input, "omarchy-action");
+  if (actual !== expected) {
+    console.error(`月份未汉化：${input} -> ${actual}（期望 ${expected}）`);
+    process.exit(1);
+  }
+}
+NODE
+
 rg -Fq '重新登录 ' "$plugin_root/testuser.agents/Panel.qml"
 rg -Fq '在新的' "$plugin_root/testuser.agents/Panel.qml"
 rg -Fq '返回额度' "$plugin_root/testuser.agents/Panel.qml"
@@ -259,15 +282,24 @@ rg -Fq 'dnsProviders: ["DHCP", "Cloudflare", "Google", "Custom"]' "$plugin_root/
 rg -Fq 'if (provider === "Custom")' "$plugin_root/testuser.network/Panel.qml"
 rg -Fq 'provider: "Custom"' "$plugin_root/testuser.network/Panel.qml"
 rg -Fq '{ "Custom": "自定义" })[provider] || provider' "$plugin_root/testuser.network/Panel.qml"
-! rg -Fq 'provider === "自定义"' "$plugin_root/testuser.network/Panel.qml"
-rg -Fq 't === "W"' "$plugin_root/testuser.clock/Panel.qml"
-rg -Fq 't === "W"' "$plugin_root/testuser.network/Panel.qml"
-! rg -Fq 't === "周"' "$plugin_root/testuser.clock/Panel.qml" "$plugin_root/testuser.network/Panel.qml"
-rg -Fq 'text: "周"' "$plugin_root/testuser.clock/Panel.qml"
-rg -Fq 'mediaClass.indexOf("Output")' "$plugin_root/testuser.audio/Model.js"
-rg -Fq 'mediaClass.indexOf("Source")' "$plugin_root/testuser.audio/Model.js"
-! rg -Fq 'indexOf("输出")' "$plugin_root/testuser.audio/Model.js"
-! rg -Fq 'indexOf("音源")' "$plugin_root/testuser.audio/Model.js"
+refute() {
+  if "$@"; then
+    echo "断言失败（预期不应匹配）：$*" >&2
+    exit 1
+  fi
+}
+
+refute rg -Fq 'provider === "自定义"' "$plugin_root/testuser.network/Panel.qml"
+refute rg -Fq 't === "周"' "$plugin_root/testuser.clock/Panel.qml" "$plugin_root/testuser.network/Panel.qml"
+refute rg -Fq 'indexOf("输出")' "$plugin_root/testuser.audio/Model.js"
+refute rg -Fq 'indexOf("音源")' "$plugin_root/testuser.audio/Model.js"
+refute rg -Fq '/\bMicrophones\b/g, "麦克风"' "$plugin_root/testuser.audio/Model.js"
+rg -Fq '/\bMicrophones\b/g, "Microphone"' "$plugin_root/testuser.audio/Model.js"
+rg -Fq 'backendState === "Stopped"' "$plugin_root/testuser.tailscale/Service.qml"
+refute rg -Fq 'backendState === "已停止"' "$plugin_root/testuser.tailscale/Service.qml"
+rg -Fq '"Filing files": "正在归档文件"' "$ROOT_DIR/bin/omarchy-zh-sync"
+rg -Fq '"Zones (Label|IANA name, comma separated; blank seeds on first run)": "显示时区' "$ROOT_DIR/bin/omarchy-zh-sync"
+rg -Fq '"Not installed": "未安装"' "$ROOT_DIR/bin/omarchy-zh-sync"
 python3 - "$plugin_root" <<'PY'
 import re, pathlib, sys
 root = pathlib.Path(sys.argv[1])
@@ -335,11 +367,17 @@ fi
 rg -Fq 'Omarchy Shell 重启后未能就绪' "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-restart-shell"
 rg -Fq -- '--affirmative "是" --negative "否" --no-show-help' \
   "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-restart"
-! rg -Fq 'Omarchy update in progress' \
+refute rg -Fq 'Omarchy update in progress' \
   "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-stay-awake"
 
 if rg -n '/home/[[:alnum:]_.-]+|/Users/[[:alnum:]_.-]+' "$sandbox_home"; then
   echo "生成结果包含开发机器信息。" >&2
+  exit 1
+fi
+
+# usage-update 在 --except 缺少参数时应安全报错退出
+if "$ROOT_DIR/agents-overlay/bin/usage-update" --except 2>/dev/null; then
+  echo "usage-update --except 缺少参数时未能防御退出" >&2
   exit 1
 fi
 

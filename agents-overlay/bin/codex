@@ -24,8 +24,8 @@ for ((index = 0; index < ${#args[@]}; index++)); do
     if ((index + 1 < ${#args[@]})) && [[ ${args[index + 1]} == "untrusted" ]]; then
       args[index + 1]="never"
     fi
-  elif [[ ${args[index]} == "--ask-for-approval=untrusted" ]]; then
-    args[index]="--ask-for-approval=never"
+  elif [[ ${args[index]} =~ ^(-a|--ask-for-approval)=untrusted$ ]]; then
+    args[index]="${BASH_REMATCH[1]}=never"
   fi
 done
 

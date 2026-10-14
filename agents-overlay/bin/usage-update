@@ -18,6 +18,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --force | --limits-only) flags+=("$1") ;;
     --except)
+      [[ -n ${2:-} ]] || {
+        echo "usage-update: --except 缺少参数" >&2
+        exit 2
+      }
       excluded[$2]=1
       shift
       ;;
@@ -51,7 +55,9 @@ collect_agent() {
 }
 
 pids=()
-/usr/bin/omarchy-agent-usage-update "${original_args[@]}" \
+upstream_updater=$(command -v omarchy-agent-usage-update || true)
+[[ -x "$upstream_updater" ]] || upstream_updater="/usr/bin/omarchy-agent-usage-update"
+"$upstream_updater" "${original_args[@]}" \
   --except codex --except grok --except kimi &
 pids+=($!)
 for entry in \

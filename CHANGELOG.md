@@ -6,6 +6,28 @@
 
 ### 修复与补全
 
+- **架构与脚本健壮性及安全修复**：
+  - 修复卸载脚本 `uninstall.sh` 在恢复天气单位时 jq 过滤器缺失空值保护的致命缺陷：增加 `((.id // "") | endswith(".weather"))` 兜底，防止微件对象缺少 `.id` 属性时以退出码 5 崩溃中断卸载流程。
+  - 修复 `bin/omarchy-zh-sync` 的 `syncShellSettings` 缺少微件非空防御的问题：遍历时增加 `if (widget && ...)` 守卫，杜绝格式异常导致的 Node.js TypeError。
+  - 修复 Codex shim 仅支持空格分隔与 `--ask-for-approval=untrusted` 的问题：扩展支持 `-a=untrusted` 等内联参数形态。
+  - 修复 Grok 收集器在预付余额刚好为 0 时被判定为 None 从而隐藏余额的问题：将判定范围放宽至 `remaining >= 0`。
+  - 增强 Codex 收集器上游脚本寻找机制：优先通过 `$OMARCHY_PATH/bin` 探测开发检出中的脚本。
+  - 消除 Kimi 收集器中非标准 `os.sys.stderr` 写法，重构为标准 `import sys`。
+  - 补齐 Dropbox 插件 10 条动态同步文案（`正在归档文件`、`正在分发数据`、`正在整理文件夹`等）及开关操作提示（`暂停同步` / `恢复同步`）。
+  - 补齐 Elsewhen 世界时钟微件的 7 项配置项 Schema 标签说明。
+  - 修正 Tailscale 状态机逻辑比较保护：避免全局替换篡改底层 `backendState === "Stopped"` 枚举值。
+  - 补全源码目录标准文档规范：为 `bin/`、`hooks/`、`tests/` 添加符合标准的 `README.md`，并将 `.planning/` 录入 `.gitignore`。
+  - 修复测试套件否定断言失效缺陷：将 `tests/integration.sh` 与 `tests/install-cycle.sh` 中的裸 `! cmd` 断言统一重构为严格校验的 `refute` 函数，杜绝因 `set -e` 旁路导致负向测试契约伪通过的问题；并在 `smoke.sh` 及 CI 工作流中集成 `shellcheck` 静态检查。
+  - 修复 `usage-update` 脚本在 `--except` 缺少对应参数时的参数越界与未绑定变量崩溃异常（提前防御退出），并优化排除项判定。
+  - 同步器补齐 `USER` 环境变量合法性正则校验，与 `install.sh` 保持防御一致，杜绝潜在目录跨越隐患。
+  - `menuUser` 写入升级为原子写入（`tmp` + `rename`），防止断电或信号中断产生破损配置。
+  - 修正通知月份替换：同时支持国际日期格式（`15 May 2026` → `15 5月 2026`）与美式日期格式（`May 15, 2026`），并继续避免误伤情态动词 `May`。注意实现刻意不使用后行断言 `(?<=...)`：Quickshell 的 Qt V4 引擎不支持后行断言，且失败是静默的（整条正则连同前瞻分支一起失效，反而破坏 `May 15` 的既有汉化），故改用捕获组回引 `"$15月"`。
+  - 修复音频模型正则中的 `Microphones` 词元在全局替换中被篡改为中文的问题，保证内部规范化逻辑正常执行。
+  - 修正夜灯指示器提示（`Day Light`）为动作语义的 `关闭夜灯`：该文案是夜灯已开启时的 `activeTooltipText`，与同族指示器（`Allow Notifications`、`Stop recording`）一致应为动作导向，此前的 `日间模式` 系状态与动作语义倒置。
+  - 修复 `install.sh` 收尾阶段的致命崩溃：无图形会话（`HYPRLAND_INSTANCE_SIGNATURE` 为空）时不再调用 `hyprctl`；`hyprctl reload` 在无会话下返回退出码 3 也不再触发 `set -euo pipefail` 中止，配置校验失败仍会如实报错退出。
+  - 修复 `uninstall.sh` 恢复天气单位时 jq 表达式在配置缺失 `.bar.layout` 或其为 `null` 时以退出码 5 崩溃（`Cannot iterate over null`）的问题：取值与回写两处均加可选链 `?` 与类型守卫，损坏或不完整的 `shell.json` 不再中断卸载流程。
+  - 消除上游脚本路径硬编码：`usage-update` 与 `codex-collector` 改为先经 `command -v` / 环境变量 `OMARCHY_CODEX_COLLECTOR` / `shutil.which` 动态查找上游可执行文件，仅在查找失败时回退 `/usr/bin/omarchy-agent-usage-*`，适配非标准前缀的上游安装。
+  - 补强通知汉化测试契约：新增 `15 May 2026` 与 `May 15, 2026` 双向日期格式断言；同时修正既有情态动词 `May` 断言漏传 `appName` 导致 `translate` 提前返回、断言恒真空转的缺陷。
 - **安装器兼容性增强**：
   - 修复开发工作区（Dev Checkout）环境下 `omarchy version` 输出 `dev (<hash>)` 导致安装器版本检查误拒的问题：安装器现能自动追溯解析并读取开发检出中的真实版本文件，确保开发环境与正式包一致平滑安装。
 - **顶栏指示器与微件漏译**：

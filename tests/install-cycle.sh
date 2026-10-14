@@ -136,7 +136,14 @@ test ! -e "$sandbox_home/.local/share/omarchy-zh-cn/bin/omarchy-update-restart"
 test ! -e "$sandbox_home/.local/share/omarchy-zh-cn/agents"
 rg -Fq 'old-hook' "$sandbox_home/.config/omarchy/hooks/post-update.d/omarchy-zh-post-update"
 test ! -e "$sandbox_home/.config/omarchy/extensions/omarchy-menu.jsonc"
-! rg -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
+refute() {
+  if "$@"; then
+    echo "断言失败（预期不应匹配）：$*" >&2
+    exit 1
+  fi
+}
+
+refute rg -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
 [[ $(jq -r '.bar.layout.center[0].unit' "$sandbox_home/.config/omarchy/shell.json") == imperial ]]
 
 # 上游把 logout/reboot/shutdown 合并成 omarchy-system；私有 bin 目录若残留
@@ -162,9 +169,9 @@ rg -Fq 'omarchy-menu-keybindings-zh' "$sandbox_home/.config/hypr/bindings.lua"
 grep -v -e '^-- >>> omarchy-zh-cn$' -e '^-- <<< omarchy-zh-cn$' \
   "$sandbox_home/.config/hypr/bindings.lua" >"$sandbox_home/bindings.tmp"
 mv "$sandbox_home/bindings.tmp" "$sandbox_home/.config/hypr/bindings.lua"
-! grep -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
+refute grep -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
 HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/uninstall.sh" --yes >/dev/null
-! grep -Fq 'omarchy-menu-keybindings-zh' "$sandbox_home/.config/hypr/bindings.lua"
+refute grep -Fq 'omarchy-menu-keybindings-zh' "$sandbox_home/.config/hypr/bindings.lua"
 grep -Fq '关闭窗口' "$sandbox_home/.config/hypr/bindings.lua"
 
 echo "隔离安装与卸载周期检查通过。"

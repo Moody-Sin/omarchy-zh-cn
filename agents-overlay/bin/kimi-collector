@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import shutil
+import sys
 import tempfile
 import threading
 import time
@@ -89,7 +90,7 @@ def safe_settings() -> dict[str, Any]:
     return {}
   try:
     if path.stat().st_mode & 0o077:
-      print("kimi-collector: refusing credentials from a non-private kimi.json", file=os.sys.stderr)
+      print("kimi-collector: refusing credentials from a non-private kimi.json", file=sys.stderr)
       return {}
   except OSError:
     return {}
@@ -144,12 +145,25 @@ def credential_lock() -> Iterator[None]:
   while True:
     try:
       lock_dir.mkdir()
+      try:
+        (lock_dir / "pid").write_text(str(os.getpid()), encoding="utf-8")
+      except OSError:
+        pass
       break
     except FileExistsError:
       try:
+        pid_file = lock_dir / "pid"
+        pid_alive = False
+        if pid_file.exists():
+          try:
+            pid = int(pid_file.read_text(encoding="utf-8").strip())
+            os.kill(pid, 0)
+            pid_alive = True
+          except (OSError, ValueError):
+            pid_alive = False
         age = time.time() - lock_dir.stat().st_mtime
-        if age > 5:
-          shutil.rmtree(lock_dir)
+        if (not pid_alive) or age > 10:
+          shutil.rmtree(lock_dir, ignore_errors=True)
           continue
       except OSError:
         pass

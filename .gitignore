@@ -16,3 +16,6 @@ venv/
 .mise.toml
 .vscode/
 
+# 计划与工作进度记录
+.planning/
+

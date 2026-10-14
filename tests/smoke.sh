@@ -21,7 +21,7 @@ node --check "$ROOT_DIR/bin/omarchy-zh-sync"
 "$ROOT_DIR/bin/omarchy-zh-sync" --help >/dev/null
 
 if rg -n '/home/[[:alnum:]_.-]+|/Users/[[:alnum:]_.-]+' "$ROOT_DIR" \
-  -g '!tests/smoke.sh' -g '!tests/integration.sh'; then
+  -g '!tests/smoke.sh' -g '!tests/integration.sh' -g '!.git' -g '!bin/README.md'; then
   echo "发现个人路径或用户名。" >&2
   exit 1
 fi
@@ -43,5 +43,9 @@ rg -Fq -- '--affirmative "是"' "$ROOT_DIR/bin/omarchy-update-confirm-zh"
 rg -Fq -- '--negative "否"' "$ROOT_DIR/bin/omarchy-update-confirm-zh"
 
 echo "静态检查通过。"
+shellcheck -e SC1091 "$ROOT_DIR/install.sh" "$ROOT_DIR/uninstall.sh" \
+  "$ROOT_DIR/bin/omarchy-update-zh" "$ROOT_DIR/bin/omarchy-update-confirm-zh" \
+  "$ROOT_DIR/hooks/omarchy-zh-post-update" "$ROOT_DIR/tests/"*.sh \
+  "$ROOT_DIR/agents-overlay/bin/codex" "$ROOT_DIR/agents-overlay/bin/usage-update"
 "$ROOT_DIR/tests/integration.sh"
 "$ROOT_DIR/tests/install-cycle.sh"

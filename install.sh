@@ -244,9 +244,9 @@ fi
 "$SYNC_TARGET" --adopt-existing
 omarchy hook install post-update "$HOOK_SOURCE"
 
-if command -v hyprctl >/dev/null; then
-  hyprctl reload >/dev/null
-  config_errors=$(hyprctl configerrors)
+if command -v hyprctl >/dev/null && [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]; then
+  hyprctl reload >/dev/null || true
+  config_errors=$(hyprctl configerrors 2>/dev/null || true)
   [[ -z $config_errors ]] || {
     echo "$config_errors" >&2
     exit 1
