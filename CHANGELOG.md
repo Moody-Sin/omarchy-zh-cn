@@ -6,6 +6,13 @@
 
 ### 修复与补全
 
+- **端到端测试与质量防护网全面重构与补齐**：
+  - 彻底消灭测试盲区：为此前 0 覆盖的 `omarchy.reminders`（提醒流）和 `omarchy.polkit`（权限认证）插件补充完整端到端测试断言，并在 Node.js 中对 `PolkitModel.authorizationLabel` 执行真实调用断言。
+  - 补齐弱覆盖插件核心文案断言：涵盖 `monitor`、`power`、`weather`、`system-update`、`image-picker`、`bluetooth`、`dock`、`tray`、`clock` 的关键 UI 文本。
+  - 动态错误拦截函数（`localizedCommandError`）升级为执行级验证：在 `integration.sh` 中通过大括号平衡算法精准提取 `wifiqr`、`speedtest`、`disk-speedtest` 的函数体并传入 mock 数据求值，覆盖全部 9 条核心报错与 5 组动态正则，并验证未知错误原样透传。
+  - 补强通知中心动态正则断言：在 `NotificationLocalization.js` 测试中增加 12 条高危动态正则用例（含进程崩溃、低电量预警、会话未锁屏、录屏/截图目录、默认应用变更、时区与工作区布局等）。
+  - 新增全量生成 JS 文件的 AST/VM 语法编译自检：递归扫描沙箱中由 25 个插件生成的全量 `.js` 文件，剥离 QML 专有顶层指令（`.pragma` 与 `.import`）后通过 `vm.compileFunction` 编译，杜绝语法损坏风险。
+  - 增强安装卸载生命周期（`install-cycle.sh`）严密性：补充 `--dry-run` 零副作用断言（无文件与目录残留且保证有预览输出）、安装幂等性断言（重复安装不膨胀配置，绑定块严格单份）、卸载零残留断言（插件目录下 `testuser.*` 严格为 0）。
 - **架构与脚本健壮性及安全修复**：
   - 修复卸载脚本 `uninstall.sh` 在恢复天气单位时 jq 过滤器缺失空值保护的致命缺陷：增加 `((.id // "") | endswith(".weather"))` 兜底，防止微件对象缺少 `.id` 属性时以退出码 5 崩溃中断卸载流程。
   - 修复 `bin/omarchy-zh-sync` 的 `syncShellSettings` 缺少微件非空防御的问题：遍历时增加 `if (widget && ...)` 守卫，杜绝格式异常导致的 Node.js TypeError。

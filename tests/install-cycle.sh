@@ -80,6 +80,17 @@ chmod 755 "$stub_bin/omarchy" "$stub_bin/omarchy-shell" "$stub_bin/hyprctl"
 
 test_path="$stub_bin:$PATH"
 
+# --dry-run 必须是纯预览：在尚未安装、尚未播种旧文件的干净 HOME 下，
+# 它不能克隆任何插件、不能落地同步器、也不能碰 bindings.lua。
+dry_run_output=$(HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/install.sh" --dry-run)
+test ! -e "$sandbox_home/.config/omarchy/plugins"
+test ! -e "$sandbox_home/.local/bin/omarchy-zh-sync"
+test ! -e "$sandbox_home/.local/share/omarchy-zh-cn"
+test ! -e "$sandbox_home/.config/hypr/bindings.lua"
+test ! -e "$sandbox_home/.local/state/omarchy-zh-cn"
+# 预览输出必须说明将要做什么，否则 --dry-run 只是静默空转。
+rg -Fq '将克隆：omarchy.audio -> testuser.audio' <<<"$dry_run_output"
+
 mkdir -p "$sandbox_home/.local/bin" \
   "$sandbox_home/.local/share/omarchy-zh-cn/bin" \
   "$sandbox_home/.config/omarchy/hooks/post-update.d" \
@@ -125,6 +136,14 @@ rg -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
 [[ $(find "$sandbox_home/.config/omarchy/plugins" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l) -eq 25 ]]
 [[ $(jq -r '.bar.layout.center[0].unit' "$sandbox_home/.config/omarchy/shell.json") == metric ]]
 
+# 重复安装必须幂等：安装器是“配置 + 克隆 + 追加绑定块”，若不去重，
+# 第二次运行会把同一个绑定块再追加一遍，卸载也只能剥掉一层。
+HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/install.sh" >/dev/null
+[[ $(grep -c -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua") -eq 1 ]]
+[[ $(grep -c -- '-- <<< omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua") -eq 1 ]]
+[[ $(grep -c 'omarchy-menu-keybindings-zh' "$sandbox_home/.config/hypr/bindings.lua") -eq 1 ]]
+[[ $(find "$sandbox_home/.config/omarchy/plugins" -mindepth 2 -maxdepth 2 -name manifest.json | wc -l) -eq 25 ]]
+
 HOME="$sandbox_home" USER=testuser PATH="$test_path" "$ROOT_DIR/uninstall.sh" --yes >/dev/null
 
 rg -Fq 'old-sync' "$sandbox_home/.local/bin/omarchy-zh-sync"
@@ -145,6 +164,9 @@ refute() {
 
 refute rg -Fq -- '-- >>> omarchy-zh-cn' "$sandbox_home/.config/hypr/bindings.lua"
 [[ $(jq -r '.bar.layout.center[0].unit' "$sandbox_home/.config/omarchy/shell.json") == imperial ]]
+# 卸载必须零残留：插件目录里不能再留下任何 testuser.* 克隆。
+[[ $(find "$sandbox_home/.config/omarchy/plugins" -mindepth 1 -maxdepth 1 \
+  -name "testuser.*" | wc -l) -eq 0 ]]
 
 # 上游把 logout/reboot/shutdown 合并成 omarchy-system；私有 bin 目录若残留
 # 该脚本会遮蔽上游同名命令，所以卸载后必须消失。

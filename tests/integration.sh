@@ -227,7 +227,20 @@ const cases = {
   "Hold Right Alt or F9 to dictate (or toggle with Super + Ctrl + X).": "按住右 Alt 或 F9 开始听写（或按 Super + Ctrl + X 切换）。",
   "Could not complete reboot. Please try again.": "无法完成 reboot，请重试。",
   "Recording without microphone audio": "未录制 microphone 音频",
-  "Battery is down to 15%": "电池电量已降至 15%"
+  "Battery is down to 15%": "电池电量已降至 15%",
+  // 带占位符的动态正则最容易被改坏：路径、百分比、括号与专有名词都必须原样保留。
+  "Process crashed: /usr/bin/waybar": "进程崩溃：/usr/bin/waybar",
+  "Battery is down to 10%": "电池电量已降至 10%",
+  "The session was left unlocked (idle timeout).": "会话处于未锁定状态（idle timeout）。",
+  "Screen recording directory does not exist: /tmp/rec": "屏幕录制目录不存在：/tmp/rec",
+  "Created screenshot directory: /tmp/shots": "已创建截图目录：/tmp/shots",
+  "Mirroring enabled (eDP-1)": "已启用镜像显示（eDP-1）",
+  "Firefox is now the default browser": "Firefox 现已设为默认浏览器",
+  "Alacritty is now the default terminal": "Alacritty 现已设为默认终端",
+  "Workspace layout set to scrolling": "工作区布局已设为滚动布局",
+  "Timezone is now set to Asia/Shanghai": "时区现已设为 Asia/Shanghai",
+  "Reminder set for 15 minutes": "已设置 15 分钟后的提醒",
+  "New Claude sessions now use Sonnet 3.7": "新的 Claude 会话现在使用 Sonnet 3.7"
 }
 for (const [input, expected] of Object.entries(cases)) {
   const actual = translate(input, "omarchy-action")
@@ -246,6 +259,68 @@ rg -Fq '无法获取测速节点' "$plugin_root/testuser.speedtest/Panel.qml"
 rg -Fq '测速未完成' "$plugin_root/testuser.disk-speedtest/Panel.qml"
 rg -Fq 'function localizedCommandError' "$plugin_root/testuser.wifiqr/Panel.qml"
 rg -Fq '没有正在使用的无线网络连接' "$plugin_root/testuser.wifiqr/Panel.qml"
+# 只断言函数名等于没测：这里把生成的函数体真正执行一遍。函数内部的
+# messages = { ... } 会让简单正则提前截断，因此按大括号配平提取。
+node - "$plugin_root" <<'NODE'
+const fs = require("fs")
+const path = require("path")
+const root = process.argv[2]
+
+function extractLocalizedCommandError(file) {
+  const source = fs.readFileSync(file, "utf8")
+  const start = source.indexOf("function localizedCommandError")
+  if (start === -1) throw new Error(`找不到 localizedCommandError：${file}`)
+  let depth = 0
+  for (let index = source.indexOf("{", start); index < source.length; index++) {
+    if (source[index] === "{") depth++
+    else if (source[index] === "}" && --depth === 0) return source.slice(start, index + 1)
+  }
+  throw new Error(`localizedCommandError 花括号不平衡：${file}`)
+}
+
+function localizedCommandErrorOf(plugin) {
+  const file = path.join(root, plugin, "Panel.qml")
+  return new Function(`${extractLocalizedCommandError(file)}; return localizedCommandError`)()
+}
+
+// 未知错误必须原样返回，否则会吞掉上游新增的报错信息。
+const passthroughCases = {
+  "testuser.wifiqr": "Unexplained failure",
+  "testuser.speedtest": "Unexplained failure",
+  "testuser.disk-speedtest": "Unexplained failure"
+}
+const cases = {
+  "testuser.wifiqr": {
+    "Could not read the Wi-Fi password": "无法读取无线网络密码",
+    "Enterprise Wi-Fi has no shareable password": "企业无线网络没有可分享的密码"
+  },
+  "testuser.speedtest": {
+    "curl is required": "网络测速需要 curl",
+    "No active network interface": "没有可用的网络接口"
+  },
+  // 磁盘测速靠动态正则改写路径与容量，最容易在汉化时丢掉占位符。
+  "testuser.disk-speedtest": {
+    "Cannot find a disk behind /dev/nvme0n1": "无法找到 /dev/nvme0n1 所在的磁盘",
+    "Need at least 10G free on /home": "/home 至少需要 10G 可用空间",
+    "Disk read test failed before finishing": "磁盘读取测速未完成",
+    "Disk write test failed before finishing": "磁盘写入测速未完成",
+    "Direct disk I/O is not available on /tmp": "/tmp 不支持直接磁盘 I/O"
+  }
+}
+for (const [plugin, table] of Object.entries(cases)) {
+  const localized = localizedCommandErrorOf(plugin)
+  for (const [input, expected] of Object.entries(table)) {
+    const actual = localized(input)
+    if (actual !== expected) {
+      throw new Error(`${plugin} 命令错误未汉化：${input} -> ${actual}（期望 ${expected}）`)
+    }
+  }
+  const unknown = passthroughCases[plugin]
+  if (localized(unknown) !== unknown) {
+    throw new Error(`${plugin} 改写了未知错误：${localized(unknown)}`)
+  }
+}
+NODE
 # 新增克隆的四个插件：程序坞、Tailscale、Dropbox、世界时钟。
 rg -Fq 'text: "自动隐藏"' "$plugin_root/testuser.dock/DockWindow.qml"
 rg -Fq '确定要卸载 ' "$plugin_root/testuser.dock/AppGrid.qml"
@@ -282,6 +357,73 @@ rg -Fq 'dnsProviders: ["DHCP", "Cloudflare", "Google", "Custom"]' "$plugin_root/
 rg -Fq 'if (provider === "Custom")' "$plugin_root/testuser.network/Panel.qml"
 rg -Fq 'provider: "Custom"' "$plugin_root/testuser.network/Panel.qml"
 rg -Fq '{ "Custom": "自定义" })[provider] || provider' "$plugin_root/testuser.network/Panel.qml"
+
+# 以下插件此前完全没有断言或仅有一行弱断言，这里补齐各自的核心 UI 文案。
+rg -Fq 'text: "显示器"' "$plugin_root/testuser.monitor/Panel.qml"
+rg -Fq 'text: "亮度"' "$plugin_root/testuser.monitor/Panel.qml"
+rg -Fq 'text: "缩放"' "$plugin_root/testuser.monitor/Panel.qml"
+rg -Fq 'text: "文字大小"' "$plugin_root/testuser.monitor/Panel.qml"
+
+rg -Fq 'text: "电池"' "$plugin_root/testuser.power/Panel.qml"
+rg -Fq 'label: "电池容量"' "$plugin_root/testuser.power/Panel.qml"
+rg -Fq 'label: "充电循环次数"' "$plugin_root/testuser.power/Panel.qml"
+rg -Fq '"已充满"' "$plugin_root/testuser.power/Panel.qml"
+
+rg -Fq 'text: "体感"' "$plugin_root/testuser.weather/Panel.qml"
+rg -Fq 'text: "风速"' "$plugin_root/testuser.weather/Panel.qml"
+rg -Fq 'text: "湿度"' "$plugin_root/testuser.weather/Panel.qml"
+rg -Fq 'text: "正在获取天气预报…"' "$plugin_root/testuser.weather/Panel.qml"
+
+rg -Fq 'tooltipText: "有可用的 Omarchy 更新"' \
+  "$plugin_root/testuser.system-update/SystemUpdate.qml"
+rg -Fq '"没有匹配项"' "$plugin_root/testuser.image-picker/ImagePicker.qml"
+
+rg -Fq 'return rows[index].section === "known" ? "已配对" : "可用设备"' \
+  "$plugin_root/testuser.bluetooth/Panel.qml"
+rg -Fq 'text: "已连接"' "$plugin_root/testuser.bluetooth/Panel.qml"
+
+rg -Fq 'text: "新建窗口"' "$plugin_root/testuser.dock/DockWindow.qml"
+rg -Fq 'text: "退出"' "$plugin_root/testuser.dock/DockWindow.qml"
+rg -Fq '"保留在程序坞"' "$plugin_root/testuser.dock/DockWindow.qml"
+
+rg -Fq 'text: "当前没有托盘项目。"' "$plugin_root/testuser.tray/Tray.qml"
+
+rg -Fq 'text: "珍惜此刻"' "$plugin_root/testuser.clock/Panel.qml"
+rg -Fq 'text: "出生年份"' "$plugin_root/testuser.clock/Panel.qml"
+rg -Fq 'text: "人生"' "$plugin_root/testuser.clock/Panel.qml"
+
+# 提醒流程此前零断言：提示词与校验失败的通知文案都要汉化。
+rg -Fq '"多少分钟后提醒"' "$plugin_root/testuser.reminders/ReminderFlow.qml"
+rg -Fq '"提醒内容"' "$plugin_root/testuser.reminders/ReminderFlow.qml"
+rg -Fq '"提醒时间无效"' "$plugin_root/testuser.reminders/ReminderFlow.qml"
+rg -Fq '"请输入分钟数"' "$plugin_root/testuser.reminders/ReminderFlow.qml"
+# 两条文案必须是同一次 omarchy-notification-send 调用的标题与正文。
+rg -Fq '"提醒时间无效", "请输入分钟数"' \
+  "$plugin_root/testuser.reminders/ReminderFlow.qml"
+
+# Polkit 密码行的三种状态（错误/验证中/待输入）都必须汉化。
+rg -Fq '"密码错误"' "$plugin_root/testuser.polkit/PolkitAgent.qml"
+rg -Fq '"正在验证…"' "$plugin_root/testuser.polkit/PolkitAgent.qml"
+rg -Fq '"请输入密码"' "$plugin_root/testuser.polkit/PolkitAgent.qml"
+rg -Fq 'text: root.errorFlash ? "密码错误" : (root.submitted ? "正在验证…" : "请输入密码")' \
+  "$plugin_root/testuser.polkit/PolkitAgent.qml"
+
+# 授权提示由 JS 组装，必须真实执行导出函数才能验证中英文引号混排的结果。
+node - "$plugin_root/testuser.polkit/PolkitModel.js" <<'NODE'
+const { authorizationLabel } = require(process.argv[2])
+const input = "Authentication is needed to run `/usr/bin/gparted` as the super user"
+const expected = "授权运行“/usr/bin/gparted'"
+const actual = authorizationLabel(input)
+if (actual !== expected) {
+  throw new Error(`授权提示未汉化：${input} -> ${actual}（期望 ${expected}）`)
+}
+// 无法识别的 polkit 提示必须原样返回，避免误伤其它认证文案。
+const passthrough = "Authentication is required to change your own user data"
+if (authorizationLabel(passthrough) !== passthrough) {
+  throw new Error(`未识别的授权提示被改写：${authorizationLabel(passthrough)}`)
+}
+NODE
+
 refute() {
   if "$@"; then
     echo "断言失败（预期不应匹配）：$*" >&2
@@ -380,5 +522,40 @@ if "$ROOT_DIR/agents-overlay/bin/usage-update" --except 2>/dev/null; then
   echo "usage-update --except 缺少参数时未能防御退出" >&2
   exit 1
 fi
+
+# 汉化靠文本替换实现，一条替换写坏就会生成无法解析的 JS，而插件只有在
+# 运行时才会暴露语法错误。这里对全部生成的 .js 做一次编译检查。
+node - "$plugin_root" <<'NODE'
+const fs = require("fs")
+const path = require("path")
+const vm = require("vm")
+const root = process.argv[2]
+
+function collect(directory, found) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const target = path.join(directory, entry.name)
+    if (entry.isDirectory()) collect(target, found)
+    else if (entry.name.endsWith(".js")) found.push(target)
+  }
+  return found
+}
+
+const files = collect(root, []).sort()
+if (files.length === 0) throw new Error(`没有在 ${root} 下找到任何生成的 JS 文件`)
+for (const file of files) {
+  // QML 专有指令（.pragma library / .import "x.js" as X）不是合法 JS，先剥离。
+  const source = fs
+    .readFileSync(file, "utf8")
+    .split("\n")
+    .filter(line => !/^\s*\.(pragma|import)\s/.test(line))
+    .join("\n")
+  try {
+    vm.compileFunction(source, [], { filename: file })
+  } catch (error) {
+    throw new Error(`生成的 JS 无法解析：${path.relative(root, file)}\n${error.message}`)
+  }
+}
+console.log(`已检查 ${files.length} 个生成的 JS 文件。`)
+NODE
 
 echo "Omarchy 隔离集成检查通过。"

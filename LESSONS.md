@@ -91,3 +91,18 @@ Quickshell 的 Qt V4 引擎**不支持后行断言**，而且失败是静默的�
 凡是在全局字典中加入可能作为内部状态枚举的词汇，必须在对应的插件分支中显式恢复逻辑比较
 （或在测试套件中通过正则反向断言严格拦截 `=== "中文"`），确保显示文案汉化与逻辑判断隔离。
 
+## 提取 QML 注入函数做 Node 执行断言切忌用贪婪正则匹配大括号
+
+从 QML 文件中提取内联注入的 JavaScript 函数（如 `localizedCommandError`）并在 Node 中动态求值验证时，
+若函数内部包含字典对象字面量（如 `var messages = { ... }`），基于正则 `function ... \{[\s\S]*?\}` 匹配
+会在内部第一个 `}` 处提前截断，导致 `SyntaxError: Unexpected token ')'` 误报。
+提取这类函数必须使用字符级的大括号平衡栈深度计数（depth 计数法），直到最外层闭合花括号归零，才能完整抽取出可执行函数体。
+
+## 对 QML 导出的 JS 文件做语法检查必须同时剥离 `.pragma` 与 `.import`
+
+通过 `node --check` 或 `vm.compileFunction` 对克隆插件生成的全部 `.js` 脚本进行自动化语法编译校验时，
+QML 专有的非标准指令不仅有顶层的 `.pragma library`，还包含模块导入指令（如 `Sun.js` 中的 `.import "GlobeModel.js" as Solar`）。
+如果只过滤 `.pragma`，V8 引擎在遇到 `.import` 时会报语法错误中断。必须使用正则 `/^\s*\.(pragma|import)\s/`
+将两者统一剥离后再执行语法解析。
+
+
